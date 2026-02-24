@@ -26,6 +26,11 @@ export interface PluginDeepDive {
 
 export interface RecipeParameters {
   recipeTitle: string;
+  instrumentDives: {
+    instrumentName: string;
+    sourceSettings: ParameterSetting[];
+    preFxAdvice: string;
+  }[];
   dives: PluginDeepDive[];
   mixingAdvice: string;
 }
@@ -40,18 +45,24 @@ export interface DrumPattern {
     isDoubleTime: boolean;
     steps: number[];
   };
+  velocityHumanized: boolean;
+  swingPercentage: number;
 }
 
 export interface BeatRecipe {
   title: string;
   style: string;
+  bpm: number;
   description: string;
   ingredients: {
     instrument: string;
+    sourceSoundGoal: string;
     processing: SignalChainStep[];
+    loopGuide: string;
   }[];
   mastering: string[];
   artistTypes: string[];
+  layeringStrategy: string;
   drumPatterns: {
     intro: DrumPattern;
     verse: DrumPattern;

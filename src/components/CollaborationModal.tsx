@@ -196,7 +196,7 @@ export const CollaborationModal: React.FC<CollaborationModalProps> = ({ session,
 
         {/* Footer */}
         <footer className="px-12 py-8 border-t border-white/5 bg-black/60 flex items-center justify-center">
-          <p className="text-[9px] font-black text-white/20 uppercase tracking-[1em]">BeatGenius Collab Link Active</p>
+          <p className="text-[9px] font-black text-white/20 uppercase tracking-[1em]">BeatGangsta Collab Link Active</p>
         </footer>
       </div>
     </div>

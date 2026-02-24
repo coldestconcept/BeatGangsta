@@ -74,7 +74,7 @@ export const DAWGuide: React.FC<DAWGuideProps> = ({ theme, onClose }) => {
               </div>
               <div className="flex gap-4">
                 <div className="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center font-black flex-shrink-0">4</div>
-                <p className="text-sm leading-relaxed">BeatGenius will parse your .ini and load your gear automatically.</p>
+                <p className="text-sm leading-relaxed">BeatGangsta will parse your .ini and load your gear automatically.</p>
               </div>
             </div>
           ) : (

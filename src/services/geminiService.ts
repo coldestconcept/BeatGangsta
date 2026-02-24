@@ -60,12 +60,21 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<Reco
 
     Focus on modern sub-genres: Melodic Trap, Dark Drill, High-Energy Rage.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type (e.g., "Lil Wayne type", "Lil Uzi type", "Travis Scott type").
+    Include a recommended BPM for the beat.
     
+    For each ingredient (instrument):
+    - Describe the 'sourceSoundGoal': What specific sound/preset type should they look for in that instrument BEFORE adding any FX?
+    - Provide a 'loopGuide': A specific tip on how to write the MIDI loop for this instrument (e.g., "Use syncopated triplets", "Keep it in the lower octaves").
+    
+    Provide a 'layeringStrategy': Explain how all these instruments should sit together in the frequency spectrum and how they complement each other.
+
     Also provide specific drum patterns for 5 sections: Intro, Verse, Hook, Bridge, and Outro.
     For each section, specify:
     - Kick pattern (step numbers 1-16)
     - Snare OR Clap pattern (choose one based on style, step numbers 1-16)
     - Hi-Hat pattern (step numbers 1-16, or 1-32 if double time/fast)
+    - velocityHumanized (boolean): whether the velocity should be humanized/varied for this section
+    - swingPercentage (number): the recommended swing percentage (0-100) for this section
   `;
 
   const drumPatternSchema = {
@@ -87,9 +96,11 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<Reco
           steps: { type: Type.ARRAY, items: { type: Type.NUMBER } }
         },
         required: ["isDoubleTime", "steps"]
-      }
+      },
+      velocityHumanized: { type: Type.BOOLEAN },
+      swingPercentage: { type: Type.NUMBER }
     },
-    required: ["kick", "snare", "hiHat"]
+    required: ["kick", "snare", "hiHat", "velocityHumanized", "swingPercentage"]
   };
 
   const response = await ai.models.generateContent({
@@ -107,6 +118,7 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<Reco
               properties: {
                 title: { type: Type.STRING },
                 style: { type: Type.STRING },
+                bpm: { type: Type.NUMBER },
                 description: { type: Type.STRING },
                 ingredients: {
                   type: Type.ARRAY,
@@ -114,6 +126,7 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<Reco
                     type: Type.OBJECT,
                     properties: {
                       instrument: { type: Type.STRING },
+                      sourceSoundGoal: { type: Type.STRING },
                       processing: {
                         type: Type.ARRAY,
                         items: {
@@ -124,9 +137,10 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<Reco
                           },
                           required: ["pluginName", "purpose"]
                         }
-                      }
+                      },
+                      loopGuide: { type: Type.STRING }
                     },
-                    required: ["instrument", "processing"]
+                    required: ["instrument", "sourceSoundGoal", "processing", "loopGuide"]
                   }
                 },
                 mastering: {
@@ -138,6 +152,7 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<Reco
                   items: { type: Type.STRING },
                   description: "Mainstream artists who would use this beat type, e.g. 'Lil Wayne type'"
                 },
+                layeringStrategy: { type: Type.STRING },
                 drumPatterns: {
                   type: Type.OBJECT,
                   properties: {
@@ -150,7 +165,7 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<Reco
                   required: ["intro", "verse", "hook", "bridge", "outro"]
                 }
               },
-              required: ["title", "style", "description", "ingredients", "mastering", "artistTypes", "drumPatterns"]
+              required: ["title", "style", "bpm", "description", "ingredients", "mastering", "artistTypes", "layeringStrategy", "drumPatterns"]
             }
           }
         },
@@ -173,12 +188,21 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
 
     Ensure the recipes capture the signature sound, bounce, and atmospheric elements associated with ${query}.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type.
+    Include a recommended BPM for the beat.
+
+    For each ingredient (instrument):
+    - Describe the 'sourceSoundGoal': What specific sound/preset type should they look for in that instrument BEFORE adding any FX?
+    - Provide a 'loopGuide': A specific tip on how to write the MIDI loop for this instrument.
+    
+    Provide a 'layeringStrategy': Explain how all these instruments should sit together in the frequency spectrum.
 
     Also provide specific drum patterns for 5 sections: Intro, Verse, Hook, Bridge, and Outro.
     For each section, specify:
     - Kick pattern (step numbers 1-16)
     - Snare OR Clap pattern (choose one based on style, step numbers 1-16)
     - Hi-Hat pattern (step numbers 1-16, or 1-32 if double time/fast)
+    - velocityHumanized (boolean): whether the velocity should be humanized/varied for this section
+    - swingPercentage (number): the recommended swing percentage (0-100) for this section
   `;
 
   const drumPatternSchema = {
@@ -200,9 +224,11 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
           steps: { type: Type.ARRAY, items: { type: Type.NUMBER } }
         },
         required: ["isDoubleTime", "steps"]
-      }
+      },
+      velocityHumanized: { type: Type.BOOLEAN },
+      swingPercentage: { type: Type.NUMBER }
     },
-    required: ["kick", "snare", "hiHat"]
+    required: ["kick", "snare", "hiHat", "velocityHumanized", "swingPercentage"]
   };
 
   const response = await ai.models.generateContent({
@@ -220,6 +246,7 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
               properties: {
                 title: { type: Type.STRING },
                 style: { type: Type.STRING },
+                bpm: { type: Type.NUMBER },
                 description: { type: Type.STRING },
                 ingredients: {
                   type: Type.ARRAY,
@@ -227,6 +254,7 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
                     type: Type.OBJECT,
                     properties: {
                       instrument: { type: Type.STRING },
+                      sourceSoundGoal: { type: Type.STRING },
                       processing: {
                         type: Type.ARRAY,
                         items: {
@@ -237,9 +265,10 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
                           },
                           required: ["pluginName", "purpose"]
                         }
-                      }
+                      },
+                      loopGuide: { type: Type.STRING }
                     },
-                    required: ["instrument", "processing"]
+                    required: ["instrument", "sourceSoundGoal", "processing", "loopGuide"]
                   }
                 },
                 mastering: {
@@ -251,6 +280,7 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
                   items: { type: Type.STRING },
                   description: "Mainstream artists who would use this beat type, e.g. 'Lil Wayne type'"
                 },
+                layeringStrategy: { type: Type.STRING },
                 drumPatterns: {
                   type: Type.OBJECT,
                   properties: {
@@ -263,7 +293,7 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
                   required: ["intro", "verse", "hook", "bridge", "outro"]
                 }
               },
-              required: ["title", "style", "description", "ingredients", "mastering", "artistTypes", "drumPatterns"]
+              required: ["title", "style", "bpm", "description", "ingredients", "mastering", "artistTypes", "layeringStrategy", "drumPatterns"]
             }
           }
         },
@@ -286,12 +316,21 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
 
     Ensure the recipes capture the signature sound, instrumentation, and mixing techniques of that specific song.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type.
+    Include a recommended BPM for the beat.
+
+    For each ingredient (instrument):
+    - Describe the 'sourceSoundGoal': What specific sound/preset type should they look for in that instrument BEFORE adding any FX?
+    - Provide a 'loopGuide': A specific tip on how to write the MIDI loop for this instrument.
+    
+    Provide a 'layeringStrategy': Explain how all these instruments should sit together in the frequency spectrum.
 
     Also provide specific drum patterns for 5 sections: Intro, Verse, Hook, Bridge, and Outro.
     For each section, specify:
     - Kick pattern (step numbers 1-16)
     - Snare OR Clap pattern (choose one based on style, step numbers 1-16)
     - Hi-Hat pattern (step numbers 1-16, or 1-32 if double time/fast)
+    - velocityHumanized (boolean): whether the velocity should be humanized/varied for this section
+    - swingPercentage (number): the recommended swing percentage (0-100) for this section
   `;
 
   const drumPatternSchema = {
@@ -313,9 +352,11 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
           steps: { type: Type.ARRAY, items: { type: Type.NUMBER } }
         },
         required: ["isDoubleTime", "steps"]
-      }
+      },
+      velocityHumanized: { type: Type.BOOLEAN },
+      swingPercentage: { type: Type.NUMBER }
     },
-    required: ["kick", "snare", "hiHat"]
+    required: ["kick", "snare", "hiHat", "velocityHumanized", "swingPercentage"]
   };
 
   const response = await ai.models.generateContent({
@@ -333,6 +374,7 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
               properties: {
                 title: { type: Type.STRING },
                 style: { type: Type.STRING },
+                bpm: { type: Type.NUMBER },
                 description: { type: Type.STRING },
                 ingredients: {
                   type: Type.ARRAY,
@@ -340,6 +382,7 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
                     type: Type.OBJECT,
                     properties: {
                       instrument: { type: Type.STRING },
+                      sourceSoundGoal: { type: Type.STRING },
                       processing: {
                         type: Type.ARRAY,
                         items: {
@@ -350,9 +393,10 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
                           },
                           required: ["pluginName", "purpose"]
                         }
-                      }
+                      },
+                      loopGuide: { type: Type.STRING }
                     },
-                    required: ["instrument", "processing"]
+                    required: ["instrument", "sourceSoundGoal", "processing", "loopGuide"]
                   }
                 },
                 mastering: {
@@ -364,6 +408,7 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
                   items: { type: Type.STRING },
                   description: "Mainstream artists who would use this beat type, e.g. 'Lil Wayne type'"
                 },
+                layeringStrategy: { type: Type.STRING },
                 drumPatterns: {
                   type: Type.OBJECT,
                   properties: {
@@ -376,7 +421,7 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
                   required: ["intro", "verse", "hook", "bridge", "outro"]
                 }
               },
-              required: ["title", "style", "description", "ingredients", "mastering", "artistTypes", "drumPatterns"]
+              required: ["title", "style", "bpm", "description", "ingredients", "mastering", "artistTypes", "layeringStrategy", "drumPatterns"]
             }
           }
         },
@@ -400,6 +445,7 @@ export const adaptRecipeToMyPlugins = async (recipe: SavedRecipe, myPlugins: VST
     Here is the shared recipe:
     Title: ${recipe.title}
     Style: ${recipe.style}
+    BPM: ${recipe.bpm}
     Description: ${recipe.description}
     Ingredients: ${JSON.stringify(recipe.ingredients)}
     Mastering: ${JSON.stringify(recipe.mastering)}
@@ -409,6 +455,7 @@ export const adaptRecipeToMyPlugins = async (recipe: SavedRecipe, myPlugins: VST
     Please adapt this recipe so that it ONLY uses plugins from my available plugins list. 
     If I don't own a plugin used in the recipe, replace it with the most similar plugin I own, and provide new similar parameters for that beat style.
     If I do own the plugin, keep it and keep its parameters.
+    Keep the original BPM.
     
     Return the adapted recipe in the exact same JSON structure as the original recipe, including the 'parameters' field if it was present.
   `;
@@ -423,6 +470,7 @@ export const adaptRecipeToMyPlugins = async (recipe: SavedRecipe, myPlugins: VST
         properties: {
           title: { type: Type.STRING },
           style: { type: Type.STRING },
+          bpm: { type: Type.NUMBER },
           description: { type: Type.STRING },
           ingredients: {
             type: Type.ARRAY,
@@ -484,7 +532,7 @@ export const adaptRecipeToMyPlugins = async (recipe: SavedRecipe, myPlugins: VST
             }
           }
         },
-        required: ["title", "style", "description", "ingredients", "mastering", "artistTypes"]
+        required: ["title", "style", "bpm", "description", "ingredients", "mastering", "artistTypes"]
       }
     }
   });
@@ -504,10 +552,15 @@ export const getDetailedParameters = async (recipe: BeatRecipe): Promise<RecipeP
   const prompt = `
     For the following Beat Recipe, provide in-depth plugin parameters and beginner-friendly explanations for EVERY plugin mentioned.
     
+    IMPORTANT: You must also provide 'instrumentDives'. For each instrument used in the recipe:
+    1. 'sourceSettings': Specific internal parameters of the instrument plugin itself (e.g., Oscillator settings, ADSR, Filter Cutoff within the synth).
+    2. 'preFxAdvice': What the user should do to the raw instrument sound to get it ready BEFORE they even touch the FX chain.
+
     Recipe: ${recipe.title} (${recipe.style})
     Description: ${recipe.description}
     Ingredients: ${JSON.stringify(recipe.ingredients)}
     Mastering: ${recipe.mastering.join(', ')}
+    Layering Strategy: ${recipe.layeringStrategy}
 
     Be specific. For a Compressor, mention Threshold, Ratio, Attack, Release. For EQ, mention Frequencies.
     Explain the settings so a beginner understands WHY they are being adjusted.
@@ -522,6 +575,29 @@ export const getDetailedParameters = async (recipe: BeatRecipe): Promise<RecipeP
         type: Type.OBJECT,
         properties: {
           recipeTitle: { type: Type.STRING },
+          instrumentDives: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                instrumentName: { type: Type.STRING },
+                sourceSettings: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      parameter: { type: Type.STRING },
+                      value: { type: Type.STRING },
+                      explanation: { type: Type.STRING }
+                    },
+                    required: ["parameter", "value", "explanation"]
+                  }
+                },
+                preFxAdvice: { type: Type.STRING }
+              },
+              required: ["instrumentName", "sourceSettings", "preFxAdvice"]
+            }
+          },
           dives: {
             type: Type.ARRAY,
             items: {
@@ -547,7 +623,7 @@ export const getDetailedParameters = async (recipe: BeatRecipe): Promise<RecipeP
           },
           mixingAdvice: { type: Type.STRING }
         },
-        required: ["recipeTitle", "dives", "mixingAdvice"]
+        required: ["recipeTitle", "instrumentDives", "dives", "mixingAdvice"]
       }
     }
   });

@@ -28,11 +28,11 @@ interface VaultProps {
 const MagazineMockup: React.FC<{ theme: AppTheme }> = ({ theme }) => {
   const styles = {
     'coldest': {
-      bg: 'bg-white',
-      border: 'border-sky-900',
-      text: 'text-sky-950',
-      accent: 'bg-sky-100 border-sky-400',
-      tag: 'bg-sky-600',
+      bg: 'bg-white/80 backdrop-blur-xl',
+      border: 'border-white/60',
+      text: 'text-[#082f49]',
+      accent: 'bg-white/50 border-white/40',
+      tag: 'bg-sky-500',
       title: 'BeatGenius Winter Quarterly'
     },
     'crazy-bird': {
@@ -128,12 +128,11 @@ export const Vault: React.FC<VaultProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'recipes' | 'presets'>('recipes');
   const [activeFolderId, setActiveFolderId] = useState<string | 'all'>('all');
-  const [newFolderName, setNewFolderName] = useState('');
   const [showShareGuide, setShowShareGuide] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const containerClasses = theme === 'coldest' 
-    ? "bg-white/95 border-white text-[#0c4a6e]" 
+    ? "bg-white/80 backdrop-blur-2xl border-white/60 text-[#082f49] shadow-[0_8px_30px_rgba(0,0,0,0.12)]" 
     : theme === 'crazy-bird'
     ? "bg-[#0a0000]/95 border-red-900/50 text-red-50"
     : theme === 'hustle-time'
@@ -143,13 +142,6 @@ export const Vault: React.FC<VaultProps> = ({
   const filteredRecipes = activeFolderId === 'all' 
     ? recipes 
     : recipes.filter(r => r.folderId === activeFolderId);
-
-  const handleAddFolder = () => {
-    if (newFolderName.trim()) {
-      onAddFolder(newFolderName.trim());
-      setNewFolderName('');
-    }
-  };
 
   const handleShareClick = (recipe: SavedRecipe) => {
     onExportRig(recipe);
@@ -181,11 +173,11 @@ export const Vault: React.FC<VaultProps> = ({
   // Helper for dynamic guide modal styling
   const guideThemeStyles = {
     'coldest': {
-      bg: 'bg-white',
-      border: 'border-slate-900',
-      btn: 'bg-slate-900 text-white',
-      tag: 'text-orange-600',
-      sub: 'bg-slate-100 text-slate-500',
+      bg: 'bg-white/90 backdrop-blur-2xl',
+      border: 'border-white/60',
+      btn: 'bg-gradient-to-b from-sky-400 to-sky-500 text-white shadow-[0_2px_10px_rgba(14,165,233,0.3)]',
+      tag: 'text-sky-600',
+      sub: 'bg-white/50 text-[#082f49] border border-white/40 shadow-inner',
       icon: '❄️'
     },
     'crazy-bird': {
@@ -233,7 +225,7 @@ export const Vault: React.FC<VaultProps> = ({
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
               
-              <h3 className={`text-4xl font-black tracking-tighter uppercase italic mb-2 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-900' : 'text-white'}`}>
+              <h3 className={`text-4xl font-black tracking-tighter uppercase italic mb-2 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-[#082f49]' : 'text-white'}`}>
                 {g.icon} Rig Packaged!
               </h3>
               <p className={`text-xs font-black uppercase tracking-[0.3em] ${g.tag} mb-8`}>Secure Protocol Engaged</p>
@@ -243,7 +235,7 @@ export const Vault: React.FC<VaultProps> = ({
               </div>
 
               <div className="space-y-4 max-w-md">
-                 <p className={`text-sm font-bold leading-relaxed ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-800' : 'text-white'}`}>
+                 <p className={`text-sm font-bold leading-relaxed ${theme === 'coldest' || theme === 'chef-mode' ? 'text-[#082f49]' : 'text-white'}`}>
                    Your studio session has been encrypted into the rig file. 
                    <span className={g.tag}> Send this intel to your producer ally!</span>
                  </p>
@@ -309,66 +301,6 @@ export const Vault: React.FC<VaultProps> = ({
                   <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleFileImport} />
                </div>
             </div>
-
-            {activeTab === 'recipes' && (
-              <nav className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto lg:flex-1 no-scrollbar pb-2 lg:pb-0 lg:pr-2">
-                <button 
-                  onClick={() => setActiveFolderId('all')}
-                  className={`text-left px-4 py-2 lg:py-3 rounded-xl lg:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center gap-3 whitespace-nowrap ${activeFolderId === 'all' ? 'bg-orange-500 text-white shadow-lg ring-2 ring-orange-300' : 'bg-black/5 hover:bg-black/10'}`}
-                >
-                  All Recipes
-                </button>
-                {folders.map(folder => {
-                  const bgColor = folder.color || '#0ea5e9';
-                  const textColor = getContrastColor(bgColor);
-                  const isActive = activeFolderId === folder.id;
-
-                  return (
-                    <div key={folder.id} className="group flex items-center gap-1 flex-shrink-0 lg:flex-shrink">
-                      <button 
-                        onClick={() => setActiveFolderId(folder.id)}
-                        className={`flex-1 text-left px-4 py-2 lg:py-3 rounded-xl lg:rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all truncate flex items-center gap-3 whitespace-nowrap lg:whitespace-normal ${isActive ? 'ring-4 ring-black/10 shadow-inner' : 'hover:scale-[1.02]'}`}
-                        style={{ backgroundColor: bgColor, color: textColor }}
-                      >
-                        {folder.name}
-                      </button>
-                      <div className="hidden lg:flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-1">
-                        <div className="relative w-6 h-6 rounded-full overflow-hidden border border-black/10 flex items-center justify-center">
-                          <input 
-                            type="color" 
-                            value={bgColor} 
-                            onChange={(e) => onUpdateFolderColor(folder.id, e.target.value)}
-                            className="absolute inset-[-10px] w-[200%] h-[200%] cursor-pointer bg-transparent border-none p-0"
-                          />
-                        </div>
-                        <button onClick={() => onRemoveFolder(folder.id)} className="p-1.5 text-red-500 hover:scale-110 rounded-full hover:bg-red-50">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </nav>
-            )}
-
-            {activeTab === 'recipes' && (
-              <div className="hidden lg:block pt-4 border-t border-black/5">
-                <input 
-                  type="text" 
-                  placeholder="New Folder..." 
-                  value={newFolderName}
-                  onChange={(e) => setNewFolderName(e.target.value)}
-                  className="w-full bg-black/5 rounded-xl px-4 py-3 text-xs font-bold outline-none mb-3 border border-transparent focus:border-orange-500 transition-colors"
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddFolder()}
-                />
-                <button 
-                  onClick={handleAddFolder}
-                  className="w-full py-3 bg-orange-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-colors shadow-md active:scale-95"
-                >
-                  Create Folder
-                </button>
-              </div>
-            )}
           </aside>
 
           {/* Main Content */}
@@ -377,7 +309,7 @@ export const Vault: React.FC<VaultProps> = ({
               <>
                 <header className="mb-6 sm:mb-12">
                   <h2 className="text-2xl sm:text-4xl font-black tracking-tighter mb-1 sm:mb-2">
-                    {activeFolderId === 'all' ? 'Studio Vault' : folders.find(f => f.id === activeFolderId)?.name}
+                    Studio Vault
                   </h2>
                   <p className="text-[10px] sm:text-sm font-black uppercase tracking-[0.3em] opacity-60">Architecture Repository</p>
                 </header>

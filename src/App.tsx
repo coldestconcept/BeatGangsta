@@ -87,6 +87,39 @@ const RagIcon = ({ style, isActive }: { style: DuragStyle, isActive: boolean }) 
   );
 };
 
+const SnowFlurry: React.FC = () => {
+  const snowflakes = React.useMemo(() => {
+    return Array.from({ length: 50 }).map((_, i) => {
+      const size = Math.random() * 6 + 4; // Slightly larger
+      const left = Math.random() * 100;
+      const animationDuration = Math.random() * 10 + 10;
+      const animationDelay = Math.random() * -20;
+      const opacity = Math.random() * 0.6 + 0.4; // More opaque
+      return { id: i, size, left, animationDuration, animationDelay, opacity };
+    });
+  }, []);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[1] overflow-hidden" aria-hidden="true">
+      {snowflakes.map((flake) => (
+        <div
+          key={flake.id}
+          className="absolute rounded-full bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)] animate-snowfall"
+          style={{
+            width: `${flake.size}px`,
+            height: `${flake.size}px`,
+            left: `${flake.left}%`,
+            top: `-10vh`,
+            opacity: flake.opacity,
+            animationDuration: `${flake.animationDuration}s`,
+            animationDelay: `${flake.animationDelay}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [showSaveUIModal, setShowSaveUIModal] = useState(false);
   const [saveUIName, setSaveUIName] = useState('');
@@ -129,6 +162,7 @@ const App: React.FC = () => {
   const [viewingRecipe, setViewingRecipe] = useState<SavedRecipe | null>(null);
   const [activeSession, setActiveSession] = useState<SharedSession | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const currentAppName = highEyes ? "BeatRetard" : "BeatGenius";
   const [isSecretUnlocked, setIsSecretUnlocked] = useState(() => localStorage.getItem('bg_hustle_unlocked') === 'true');
@@ -541,6 +575,35 @@ const App: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        setCsvInput(content);
+        parsePlugins(content);
+      }
+    };
+    reader.onerror = () => {
+      setError("Failed to read the file. Please try again.");
+    };
+    reader.readAsText(file);
+  };
+
   const handleGenerate = async () => {
     if (plugins.length === 0) return;
     setLoading(true);
@@ -652,12 +715,12 @@ const App: React.FC = () => {
   }[knifeStyle];
 
   const themeClasses = theme === 'coldest' 
-    ? "from-[#e0f2fe] via-[#bae6fd] to-[#7dd3fc] text-[#0c4a6e]"
+    ? "from-sky-200 via-sky-300 to-sky-400 text-sky-900"
     : theme === 'crazy-bird'
-    ? "from-[#7f1d1d] via-[#450a0a] to-[#111827] text-red-50"
+    ? "from-red-500 via-rose-500 to-orange-500 text-red-50"
     : theme === 'chef-mode'
-    ? "from-[#fef3c7] via-[#fcd34d] to-[#fbbf24] text-orange-900"
-    : "from-[#14532d] via-[#166534] to-[#111827] text-yellow-100";
+    ? "from-amber-200 via-yellow-300 to-orange-400 text-orange-900"
+    : "from-emerald-400 via-green-500 to-teal-500 text-emerald-50";
 
   const actionBtnClasses = `text-[9px] px-3 py-1.5 rounded-full font-black uppercase border transition-all truncate whitespace-nowrap flex items-center gap-1.5 hover:scale-105 active:scale-95`;
   const mobileToolbarBtnClasses = `flex flex-col items-center justify-center gap-1 p-2 flex-1 transition-all active:scale-90`;
@@ -667,6 +730,7 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen transition-all duration-700 flex flex-col bg-gradient-to-br ${themeClasses} font-sans selection:bg-sky-200 pb-20 sm:pb-0`}>
+      {theme === 'coldest' && <SnowFlurry />}
       <div className={`h-8 flex items-center justify-between px-3 text-[11px] font-bold select-none backdrop-blur-md border-b transition-all duration-500 z-[100] ${theme === 'coldest' ? 'bg-white/30 text-[#0c4a6e] border-white/20' : 'bg-black/40 text-red-100 border-red-900/30'}`}>
         <div className="flex items-center gap-2 relative">
           <button 
@@ -887,7 +951,10 @@ const App: React.FC = () => {
               <h2 className="text-3xl sm:text-4xl font-black text-red-600 tracking-tighter mb-3 uppercase italic">Chef Theme Unlocked!</h2>
               <p className="text-base sm:text-lg font-bold text-slate-800 mb-8 tracking-tight">Master of the kitchen! You can now cycle to the Chef theme.</p>
               <button 
-                onClick={() => setShowChefUnlockPopup(false)}
+                onClick={() => {
+                  setShowChefUnlockPopup(false);
+                  setTheme('chef-mode');
+                }}
                 className="bg-red-600 text-white font-black px-10 py-4 rounded-full shadow-lg uppercase tracking-[0.2em] text-[10px] sm:text-xs hover:scale-105 transition-all active:scale-95"
               >
                 Start Cooking
@@ -1125,16 +1192,25 @@ const App: React.FC = () => {
                   {theme === 'chef-mode' ? "Let's cook up some fire!" : highEyes ? "Let's get high!" : "Let's go to the top!"}
                 </h2>
               </div>
-              <textarea value={csvInput} onChange={(e) => setCsvInput(e.target.value)} className={`w-full h-80 p-6 sm:p-8 text-sm font-mono focus:ring-4 transition-all duration-500 outline-none ${mainBlurClass} border shadow-inner rounded-[2rem] sm:rounded-[3rem] ${theme === 'coldest' ? 'bg-white/40 border-white text-slate-800 focus:bg-white/60' : theme === 'chef-mode' ? 'bg-white/60 border-white text-slate-900 focus:bg-white/80' : 'bg-black/60 border-white/10 text-white focus:bg-black/80'}`} placeholder={`Paste your plugin list for ${currentAppName}...`} />
-              <div className="flex flex-wrap justify-end gap-3 mt-6">
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={`w-full h-80 p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 outline-none ${mainBlurClass} border shadow-inner rounded-[2rem] sm:rounded-[3rem] ${isDragging ? 'scale-[1.02] border-sky-500 bg-sky-500/10' : ''} ${theme === 'coldest' ? 'bg-white/40 border-white text-slate-800 hover:bg-white/60' : theme === 'chef-mode' ? 'bg-white/60 border-white text-slate-900 hover:bg-white/80' : 'bg-black/60 border-white/10 text-white hover:bg-black/80'}`}
+              >
+                <div className="text-4xl mb-4 opacity-50">{theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? '🐦' : '💰'}</div>
+                <p className="text-lg font-black tracking-tight mb-2">Drag & Drop your plugin file here</p>
+                <p className="text-sm font-bold opacity-60 mb-6">or click to browse</p>
+                <p className="text-xs font-bold opacity-40 uppercase tracking-widest">Click the Help button below to find your file</p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-3 mt-6">
                 <button 
                   onClick={() => setShowGuide(true)}
-                  className={`font-black py-4 px-6 rounded-full border text-[10px] uppercase tracking-widest transition-all select-none ${theme === 'coldest' || theme === 'chef-mode' ? 'bg-white/80 border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm' : 'bg-white/10 border-white/10 text-white hover:bg-white/20'}`}
+                  className={`font-black py-4 px-12 rounded-full border text-xs uppercase tracking-widest transition-all select-none ${theme === 'coldest' || theme === 'chef-mode' ? 'bg-white/80 border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm' : 'bg-white/10 border-white/10 text-white hover:bg-white/20'}`}
                 >
                   Help?
                 </button>
-                <button onClick={() => fileInputRef.current?.click()} className={`font-black py-4 px-8 rounded-full border text-xs transition-all select-none ${theme === 'coldest' ? 'bg-white/40 border-slate-200 text-slate-700' : theme === 'chef-mode' ? 'bg-white/20 border-white/30 text-slate-900 shadow-lg' : 'bg-transparent border-white/10 text-white'}`}>Upload</button>
-                <button onClick={() => parsePlugins(csvInput)} className={`font-black py-4 px-12 rounded-full text-xs transition-all shadow-xl select-none ${theme === 'coldest' || theme === 'chef-mode' ? 'bg-orange-500 text-white' : 'bg-white text-black'}`}>Load Gear</button>
               </div>
               <input type="file" ref={fileInputRef} className="hidden" accept=".csv,.txt,.ini" onChange={handleFileUpload} />
             </div>
@@ -1153,17 +1229,23 @@ const App: React.FC = () => {
               <div className="h-[1px] bg-current opacity-10" />
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1 group">
+                <div className="relative flex-1 group overflow-hidden rounded-full">
                   <input 
                     type="text" 
-                    placeholder="Enter artist, genre, or vibe (e.g. Cyberpunk Phonk, Ethereal Cloud Rap)..." 
                     value={typeBeatSearch}
                     onChange={(e) => setTypeBeatSearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleTypeBeatSearch()}
-                    className={`w-full py-5 px-8 rounded-full text-sm font-black focus:outline-none transition-all border-2 ${theme === 'coldest' ? 'bg-white/40 border-sky-100 focus:border-sky-400 text-slate-800' : theme === 'chef-mode' ? 'bg-white/60 border-orange-100 focus:border-orange-400 text-slate-900' : 'bg-black/60 border-white/10 focus:border-white/30 text-white'}`}
+                    className={`w-full py-5 pl-8 pr-32 sm:pr-40 rounded-full text-sm font-black focus:outline-none transition-all border-2 ${theme === 'coldest' ? 'bg-white/40 border-sky-100 focus:border-sky-400 text-slate-900' : theme === 'chef-mode' ? 'bg-white/60 border-orange-100 focus:border-orange-400 text-slate-900' : 'bg-black/60 border-white/10 focus:border-white/30 text-white'}`}
                   />
+                  {!typeBeatSearch && (
+                    <div className="absolute inset-y-0 left-8 right-32 sm:right-40 flex items-center overflow-hidden pointer-events-none">
+                      <div className={`whitespace-nowrap animate-marquee text-sm font-black ${theme === 'coldest' ? 'text-slate-600' : theme === 'chef-mode' ? 'text-slate-600' : 'text-white/50'}`}>
+                        Enter artist, genre, or vibe (e.g. Cyberpunk Phonk, Ethereal Cloud Rap)... &nbsp;&nbsp;&nbsp;&nbsp; Enter artist, genre, or vibe (e.g. Cyberpunk Phonk, Ethereal Cloud Rap)...
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-                    <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-900' : 'text-white'}`}>Vibe Search</span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest opacity-60 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-900' : 'text-white'}`}>Vibe Search</span>
                   </div>
                 </div>
                 <button 
@@ -1176,17 +1258,23 @@ const App: React.FC = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1 group">
+                <div className="relative flex-1 group overflow-hidden rounded-full">
                   <input 
                     type="text" 
-                    placeholder="Enter a song (e.g. Killa Cam by Cam'ron, Sicko Mode by Travis Scott)..." 
                     value={songSearch}
                     onChange={(e) => setSongSearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSongSearch()}
-                    className={`w-full py-5 px-8 rounded-full text-sm font-black focus:outline-none transition-all border-2 ${theme === 'coldest' ? 'bg-white/40 border-sky-100 focus:border-sky-400 text-slate-800' : theme === 'chef-mode' ? 'bg-white/60 border-orange-100 focus:border-orange-400 text-slate-900' : 'bg-black/60 border-white/10 focus:border-white/30 text-white'}`}
+                    className={`w-full py-5 pl-8 pr-32 sm:pr-40 rounded-full text-sm font-black focus:outline-none transition-all border-2 ${theme === 'coldest' ? 'bg-white/40 border-sky-100 focus:border-sky-400 text-slate-900' : theme === 'chef-mode' ? 'bg-white/60 border-orange-100 focus:border-orange-400 text-slate-900' : 'bg-black/60 border-white/10 focus:border-white/30 text-white'}`}
                   />
+                  {!songSearch && (
+                    <div className="absolute inset-y-0 left-8 right-32 sm:right-40 flex items-center overflow-hidden pointer-events-none">
+                      <div className={`whitespace-nowrap animate-marquee text-sm font-black ${theme === 'coldest' ? 'text-slate-600' : theme === 'chef-mode' ? 'text-slate-600' : 'text-white/50'}`}>
+                        Enter a song (e.g. Killa Cam by Cam'ron, Sicko Mode by Travis Scott)... &nbsp;&nbsp;&nbsp;&nbsp; Enter a song (e.g. Killa Cam by Cam'ron, Sicko Mode by Travis Scott)...
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-                    <span className={`text-[10px] font-black uppercase tracking-widest opacity-40 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-900' : 'text-white'}`}>Song Search</span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest opacity-60 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-900' : 'text-white'}`}>Song Search</span>
                   </div>
                 </div>
                 <button 
@@ -1201,7 +1289,7 @@ const App: React.FC = () => {
             {recipes.length > 0 && (
               <section className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-bottom-12 duration-1000">
                 {recipes.map((recipe, idx) => (
-                  <RecipeCard key={idx} recipe={recipe} isSaved={vault.some(r => r.title === recipe.title)} onSave={saveToVault} />
+                  <RecipeCard key={idx} recipe={recipe} isSaved={vault.some(r => r.title === recipe.title)} onSave={saveToVault} theme={theme} />
                 ))}
               </section>
             )}

@@ -87,7 +87,7 @@ export const FriendsInfoModal: React.FC<FriendsInfoModalProps> = ({ theme, onClo
             <div className="w-24 h-24 rounded-full bg-current opacity-10 mb-6 flex items-center justify-center text-4xl">🎧</div>
             <h2 className="text-2xl font-black tracking-tighter mb-2">ColdestConcept</h2>
             <p className={`text-[10px] font-black uppercase tracking-widest ${s.accent} mb-6 italic`}>The Engineer</p>
-            <p className="text-sm font-medium opacity-70 mb-8 leading-relaxed">Architect of the sonic landscape and lead technical engineer behind the BeatGenius protocols.</p>
+            <p className="text-sm font-medium opacity-70 mb-8 leading-relaxed">Architect of the sonic landscape and lead technical engineer behind the BeatGangsta protocols.</p>
             <div className="flex flex-col gap-3 w-full mt-auto">
               <SocialLink href="https://www.instagram.com/coldestconcept" label="Instagram" />
               <SocialLink href="https://open.spotify.com/artist/5qA0167FtFIRY4APzrodNT" label="Spotify" />
