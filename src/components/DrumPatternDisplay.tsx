@@ -67,9 +67,50 @@ const StepGrid = ({ steps = [], totalSteps, label, color, showVelocity }: { step
   );
 };
 
+const SwingMeter = ({ label, percentage, colorClass }: { label: string, percentage: number, colorClass: string }) => {
+  const radius = 40;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - ((percentage || 0) / 100) * circumference;
+  return (
+    <div className="text-center flex flex-col items-center gap-2">
+      <div className={`relative inline-flex items-center justify-center w-24 h-24`}>
+        <svg className="w-full h-full" viewBox="0 0 100 100">
+          <circle
+            className="text-black/10 dark:text-white/10"
+            strokeWidth="8"
+            stroke="currentColor"
+            fill="transparent"
+            r={radius}
+            cx="50"
+            cy="50"
+          />
+          <circle
+            className={colorClass}
+            strokeWidth="8"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+            strokeLinecap="round"
+            stroke="currentColor"
+            fill="transparent"
+            r={radius}
+            cx="50"
+            cy="50"
+            style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%', transition: 'stroke-dashoffset 0.5s ease-in-out' }}
+          />
+        </svg>
+        <div className="absolute flex flex-col items-center justify-center">
+          <span className={`text-3xl font-black font-mono ${colorClass}`}>{percentage || 0}</span>
+          <span className="text-[9px] font-bold opacity-70">%</span>
+        </div>
+      </div>
+      <div className="text-[10px] font-bold uppercase tracking-widest mt-1 opacity-70">{label}</div>
+    </div>
+  );
+};
+
 export const DrumPatternDisplay: React.FC<DrumPatternDisplayProps> = ({ patterns, theme }) => {
   const [activeSection, setActiveSection] = useState<keyof typeof patterns>('hook');
-  const [localToggles, setLocalToggles] = useState<Record<string, { velocity: boolean, swing: boolean }>>({});
+  const [localToggles, setLocalToggles] = useState<Record<string, { velocity: boolean }>>({});
 
   if (!patterns) return null;
 
@@ -91,21 +132,13 @@ export const DrumPatternDisplay: React.FC<DrumPatternDisplayProps> = ({ patterns
                      theme === 'crazy-bird' ? 'text-red-500' : 'text-sky-500';
 
   const currentToggles = localToggles[activeSection] || {
-    velocity: currentPattern.velocityHumanized || false,
-    swing: (currentPattern.swingPercentage || 0) > 0
+    velocity: currentPattern.velocityHumanized || false
   };
 
   const handleToggleVelocity = () => {
     setLocalToggles(prev => ({
       ...prev,
       [activeSection]: { ...currentToggles, velocity: !currentToggles.velocity }
-    }));
-  };
-
-  const handleToggleSwing = () => {
-    setLocalToggles(prev => ({
-      ...prev,
-      [activeSection]: { ...currentToggles, swing: !currentToggles.swing }
     }));
   };
 
@@ -135,30 +168,37 @@ export const DrumPatternDisplay: React.FC<DrumPatternDisplayProps> = ({ patterns
         </div>
       </div>
 
-      <div className="space-y-14">
-        <StepGrid 
-          steps={currentPattern.hiHat.steps} 
-          totalSteps={currentPattern.hiHat.isDoubleTime ? 32 : 16} 
-          label={`Hi-Hats ${currentPattern.hiHat.isDoubleTime ? '(2x Speed)' : ''}`}
-          color={activeColor}
-          showVelocity={currentToggles.velocity}
-        />
-        
-        <StepGrid 
-          steps={currentPattern.snare.steps} 
-          totalSteps={16} 
-          label={currentPattern.snare.isClap ? 'Clap' : 'Snare'}
-          color={activeColor}
-          showVelocity={currentToggles.velocity}
-        />
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        <div className="flex lg:flex-col justify-around gap-4 p-4 rounded-2xl bg-black/5 dark:bg-white/5">
+          <SwingMeter label="Hi-Hat" percentage={currentPattern.swing?.hiHat} colorClass={activeText} />
+          <SwingMeter label={currentPattern.snare.isClap ? 'Clap' : 'Snare'} percentage={currentPattern.swing?.snare} colorClass={activeText} />
+          <SwingMeter label="Kick" percentage={currentPattern.swing?.kick} colorClass={activeText} />
+        </div>
+        <div className="flex-1 space-y-14">
+          <StepGrid 
+            steps={currentPattern.hiHat.steps} 
+            totalSteps={currentPattern.hiHat.isDoubleTime ? 32 : 16} 
+            label={`Hi-Hats ${currentPattern.hiHat.isDoubleTime ? '(2x Speed)' : ''}`}
+            color={activeColor}
+            showVelocity={currentToggles.velocity}
+          />
+          
+          <StepGrid 
+            steps={currentPattern.snare.steps} 
+            totalSteps={16} 
+            label={currentPattern.snare.isClap ? 'Clap' : 'Snare'}
+            color={activeColor}
+            showVelocity={currentToggles.velocity}
+          />
 
-        <StepGrid 
-          steps={currentPattern.kick} 
-          totalSteps={16} 
-          label="Kick"
-          color={activeColor}
-          showVelocity={currentToggles.velocity}
-        />
+          <StepGrid 
+            steps={currentPattern.kick} 
+            totalSteps={16} 
+            label="Kick"
+            color={activeColor}
+            showVelocity={currentToggles.velocity}
+          />
+        </div>
       </div>
       
       <div className="mt-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-t border-black/5 dark:border-white/5 pt-6">
@@ -167,12 +207,6 @@ export const DrumPatternDisplay: React.FC<DrumPatternDisplayProps> = ({ patterns
             <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Velocity Humanize</span>
             <div className={`w-10 h-5 rounded-full p-1 transition-colors ${currentToggles.velocity ? activeColor : 'bg-black/20 dark:bg-white/20'}`}>
               <div className={`w-3 h-3 rounded-full bg-white transition-transform ${currentToggles.velocity ? 'translate-x-5' : 'translate-x-0'}`} />
-            </div>
-          </div>
-          <div className="flex items-center justify-between sm:justify-start gap-4 w-full sm:w-auto cursor-pointer group p-3 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors" onClick={handleToggleSwing}>
-            <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Swing ({currentPattern.swingPercentage || 0}%)</span>
-            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${currentToggles.swing ? activeColor : 'bg-black/20 dark:bg-white/20'}`}>
-              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${currentToggles.swing ? 'translate-x-5' : 'translate-x-0'}`} />
             </div>
           </div>
         </div>

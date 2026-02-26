@@ -46,7 +46,11 @@ export interface DrumPattern {
     steps: number[];
   };
   velocityHumanized: boolean;
-  swingPercentage: number;
+  swing: {
+    kick: number;
+    snare: number;
+    hiHat: number;
+  };
 }
 
 export interface BeatRecipe {
@@ -70,6 +74,24 @@ export interface BeatRecipe {
     bridge: DrumPattern;
     outro: DrumPattern;
   };
+  arrangement?: Record<string, string>;
+  mixingAdvice?: string;
+  deepDives?: {
+    pluginName: string;
+    whyItWorks: string;
+    keySettings: {
+      parameter: string;
+      value: string;
+    }[];
+  }[];
+  analogDives?: {
+    instrumentName: string;
+    technique: string;
+    settings: {
+      parameter: string;
+      value: string;
+    }[];
+  }[];
 }
 
 export interface Folder {

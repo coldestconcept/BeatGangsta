@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { BeatRecipe, AppTheme } from '../types';
+import { getDetailedParameters } from '../services/geminiService';
 import { DrumPatternDisplay } from './DrumPatternDisplay';
 import { motion } from 'motion/react';
+import { Loader2 } from 'lucide-react';
 
 interface RecipeCardProps {
   recipe: BeatRecipe;
@@ -12,6 +14,31 @@ interface RecipeCardProps {
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, isSaved, onSave, theme = 'coldest' }) => {
   const [expanded, setExpanded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [detailedRecipe, setDetailedRecipe] = useState<any>(null);
+
+  const fetchDetailedRecipe = async () => {
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+
+    if (detailedRecipe) {
+      setExpanded(true);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const details = await getDetailedParameters(recipe);
+      setDetailedRecipe(details);
+      setExpanded(true);
+    } catch (error) {
+      console.error("Error fetching detailed parameters:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <motion.div 
@@ -90,15 +117,23 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, isSaved, onSave,
       </div>
 
       <button 
-        onClick={() => setExpanded(!expanded)}
-        className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
+        onClick={fetchDetailedRecipe}
+        disabled={isLoading}
+        className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
           theme === 'coldest' ? 'bg-white/40 hover:bg-white/60 border border-white/50' : 'bg-white/5 hover:bg-white/10'
         }`}
       >
-        {expanded ? 'Hide Deep Dives' : 'Show Deep Dives & Arrangement'}
+        {isLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span>Analyzing Sonic DNA...</span>
+          </>
+        ) : (
+          expanded ? 'Hide Deep Dives' : 'Show Deep Dives & Arrangement'
+        )}
       </button>
 
-      {expanded && (
+      {expanded && detailedRecipe && (
         <motion.div 
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
@@ -107,12 +142,12 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, isSaved, onSave,
           <div>
             <h4 className="text-sm font-black uppercase tracking-widest opacity-40 mb-6">Arrangement</h4>
             <div className="space-y-4">
-              {Object.entries(recipe.arrangement).map(([section, guide]) => (
+              {Object.entries(detailedRecipe.arrangement || {}).map(([section, guide]) => (
                 <div key={section} className={`p-4 rounded-2xl border ${
                   theme === 'coldest' ? 'bg-white/50 border-white/40' : 'bg-black/20 border-white/5'
                 }`}>
                   <h5 className="font-black capitalize mb-1">{section}</h5>
-                  <p className="text-xs font-bold opacity-70">{guide}</p>
+                  <p className="text-xs font-bold opacity-70">{guide as string}</p>
                 </div>
               ))}
             </div>
@@ -123,19 +158,41 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, isSaved, onSave,
             <div className={`p-6 rounded-3xl border mb-6 ${
               theme === 'coldest' ? 'bg-sky-50 border-sky-100 text-sky-900' : 'bg-sky-900/20 border-sky-500/30 text-sky-100'
             }`}>
-              <p className="text-sm font-bold leading-relaxed">{recipe.mixingAdvice}</p>
+              <p className="text-sm font-bold leading-relaxed">{detailedRecipe.mixingAdvice}</p>
             </div>
             
             <h4 className="text-sm font-black uppercase tracking-widest opacity-40 mb-6">Deep Dives</h4>
             <div className="space-y-4">
-              {recipe.deepDives?.map((dive, idx) => (
+              {detailedRecipe.analogDives && detailedRecipe.analogDives.length > 0 && (
+                <div className="space-y-4 mb-6">
+                  <h5 className="text-[10px] font-black uppercase tracking-widest opacity-30">Analog Hardware Advice</h5>
+                  {detailedRecipe.analogDives.map((dive: any, idx: number) => (
+                    <div key={`analog-${idx}`} className={`p-5 rounded-2xl border ${
+                      theme === 'coldest' ? 'bg-amber-50/50 border-amber-200/50' : 'bg-amber-900/10 border-amber-500/20'
+                    }`}>
+                      <h5 className="font-black mb-2 text-amber-600 dark:text-amber-400">{dive.instrumentName}</h5>
+                      <p className="text-xs font-bold opacity-70 mb-3 italic">{dive.technique}</p>
+                      <div className="space-y-2">
+                        {dive.settings.map((setting: any, sIdx: number) => (
+                          <div key={sIdx} className="flex justify-between text-[10px] font-bold">
+                            <span className="opacity-50">{setting.parameter}</span>
+                            <span>{setting.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {detailedRecipe.deepDives?.map((dive: any, idx: number) => (
                 <div key={idx} className={`p-5 rounded-2xl border ${
                   theme === 'coldest' ? 'bg-white/50 border-white/40' : 'bg-black/20 border-white/5'
                 }`}>
                   <h5 className="font-black mb-2">{dive.pluginName}</h5>
                   <p className="text-xs font-bold opacity-70 mb-3">{dive.whyItWorks}</p>
                   <div className="space-y-2">
-                    {dive.keySettings.map((setting, sIdx) => (
+                    {dive.keySettings.map((setting: any, sIdx: number) => (
                       <div key={sIdx} className="flex justify-between text-[10px] font-bold">
                         <span className="opacity-50">{setting.parameter}</span>
                         <span>{setting.value}</span>

@@ -65,7 +65,7 @@ export const FoodField: React.FC = () => {
   ];
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]">
       <style>
         {`
           @keyframes foodFloat {

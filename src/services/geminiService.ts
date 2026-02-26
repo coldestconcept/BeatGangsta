@@ -50,13 +50,19 @@ export const categorizeAndCompareLibraries = async (senderPlugins: VSTPlugin[], 
   return JSON.parse(response.text || '{"categories": []}');
 };
 
-export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<RecommendationResponse> => {
+export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null): Promise<RecommendationResponse> => {
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
+  const analogStr = !excludeAnalog && (analogInstruments.length > 0 || analogHardware.length > 0) 
+    ? `\nThe user also owns the following real analog equipment:\nInstruments: ${analogInstruments.join(', ')}\nHardware: ${analogHardware.join(', ')}\n\nIMPORTANT SONIC CHARACTERISTICS FOR ANALOG GEAR:\n- Fender Jazzmaster: Bright, chimy, and percussive "surf" tone.\n- Fender Stratocaster: Glassy, quacky, and transparent bright tone.\n- ESP EX-50 (LTD): Heavy, dense, fat, and full sound with humbucker pickups.\n- Fender Precision Bass: Characteristic punchy "galloping" style and mid-range growl.\n- Alhambra 7FC: Bright, aggressive flamenco attack.\n- Yamaha C40: Warm, mellow nylon string tone.\n- Korg Minilogue XD: Modern polyphonic analog warmth with digital multi-engine grit.\n- Behringer TD-3: Classic squelchy 303 acid bass lines.\n- UNO Synth: Aggressive, raw analog monophonic leads.\n- Shure SM57: Industry standard dynamic mic, great for aggressive vocals or snare drums.\n- Electro-Harmonix Big Muff: Iconic thick, creamy fuzz for guitars or synths.\n- Orange Micro Dark: High-gain, aggressive tube-hybrid tone.\n- Ampeg V-4B: Classic all-tube bass grit and punch.\n- Heritage Audio 73 JR II: Classic 1073-style preamp warmth and saturation.\n- Warm Audio WA76-D: Fast, aggressive FET compression.\n\nPlease incorporate these real analog instruments and hardware into the beat recipes where appropriate, alongside the VST plugins. Use their specific sonic identities to inform the 'sourceSoundGoal' and 'loopGuide'.`
+    : '';
+  const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
 
   const prompt = `
     Analyze my VST plugin list and suggest 3 high-level "Beat Recipes" for the craziest rap beat.
     Only use plugins from this list:
     ${pluginListStr}
+    ${analogStr}
+    ${dawStr}
 
     Focus on modern sub-genres: Melodic Trap, Dark Drill, High-Energy Rage.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type (e.g., "Lil Wayne type", "Lil Uzi type", "Travis Scott type").
@@ -178,13 +184,19 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[]): Promise<Reco
   return JSON.parse(jsonStr);
 };
 
-export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: string): Promise<RecommendationResponse> => {
+export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: string, analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null): Promise<RecommendationResponse> => {
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
+  const analogStr = !excludeAnalog && (analogInstruments.length > 0 || analogHardware.length > 0) 
+    ? `\nThe user also owns the following real analog equipment:\nInstruments: ${analogInstruments.join(', ')}\nHardware: ${analogHardware.join(', ')}\n\nIMPORTANT SONIC CHARACTERISTICS FOR ANALOG GEAR:\n- Fender Jazzmaster: Bright, chimy, and percussive "surf" tone.\n- Fender Stratocaster: Glassy, quacky, and transparent bright tone.\n- ESP EX-50 (LTD): Heavy, dense, fat, and full sound with humbucker pickups.\n- Fender Precision Bass: Characteristic punchy "galloping" style and mid-range growl.\n- Alhambra 7FC: Bright, aggressive flamenco attack.\n- Yamaha C40: Warm, mellow nylon string tone.\n- Korg Minilogue XD: Modern polyphonic analog warmth with digital multi-engine grit.\n- Behringer TD-3: Classic squelchy 303 acid bass lines.\n- UNO Synth: Aggressive, raw analog monophonic leads.\n- Shure SM57: Industry standard dynamic mic, great for aggressive vocals or snare drums.\n- Electro-Harmonix Big Muff: Iconic thick, creamy fuzz for guitars or synths.\n- Orange Micro Dark: High-gain, aggressive tube-hybrid tone.\n- Ampeg V-4B: Classic all-tube bass grit and punch.\n- Heritage Audio 73 JR II: Classic 1073-style preamp warmth and saturation.\n- Warm Audio WA76-D: Fast, aggressive FET compression.\n\nPlease incorporate these real analog instruments and hardware into the beat recipes where appropriate, alongside the VST plugins. Use their specific sonic identities to inform the 'sourceSoundGoal' and 'loopGuide'.`
+    : '';
+  const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
 
   const prompt = `
     Analyze my VST plugin list and suggest 3 high-level "Beat Recipes" specifically for a "${query} type beat".
     Only use plugins from this list:
     ${pluginListStr}
+    ${analogStr}
+    ${dawStr}
 
     Ensure the recipes capture the signature sound, bounce, and atmospheric elements associated with ${query}.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type.
@@ -306,13 +318,19 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
   return JSON.parse(jsonStr);
 };
 
-export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery: string): Promise<RecommendationResponse> => {
+export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery: string, analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null): Promise<RecommendationResponse> => {
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
+  const analogStr = !excludeAnalog && (analogInstruments.length > 0 || analogHardware.length > 0) 
+    ? `\nThe user also owns the following real analog equipment:\nInstruments: ${analogInstruments.join(', ')}\nHardware: ${analogHardware.join(', ')}\n\nIMPORTANT SONIC CHARACTERISTICS FOR ANALOG GEAR:\n- Fender Jazzmaster: Bright, chimy, and percussive "surf" tone.\n- Fender Stratocaster: Glassy, quacky, and transparent bright tone.\n- ESP EX-50 (LTD): Heavy, dense, fat, and full sound with humbucker pickups.\n- Fender Precision Bass: Characteristic punchy "galloping" style and mid-range growl.\n- Alhambra 7FC: Bright, aggressive flamenco attack.\n- Yamaha C40: Warm, mellow nylon string tone.\n- Korg Minilogue XD: Modern polyphonic analog warmth with digital multi-engine grit.\n- Behringer TD-3: Classic squelchy 303 acid bass lines.\n- UNO Synth: Aggressive, raw analog monophonic leads.\n- Shure SM57: Industry standard dynamic mic, great for aggressive vocals or snare drums.\n- Electro-Harmonix Big Muff: Iconic thick, creamy fuzz for guitars or synths.\n- Orange Micro Dark: High-gain, aggressive tube-hybrid tone.\n- Ampeg V-4B: Classic all-tube bass grit and punch.\n- Heritage Audio 73 JR II: Classic 1073-style preamp warmth and saturation.\n- Warm Audio WA76-D: Fast, aggressive FET compression.\n\nPlease incorporate these real analog instruments and hardware into the beat recipes where appropriate, alongside the VST plugins. Use their specific sonic identities to inform the 'sourceSoundGoal' and 'loopGuide'.`
+    : '';
+  const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
 
   const prompt = `
     Analyze my VST plugin list and suggest 3 high-level "Beat Recipes" that recreate the production style, bounce, and sonic atmosphere of the song "${songQuery}".
     Only use plugins from this list:
     ${pluginListStr}
+    ${analogStr}
+    ${dawStr}
 
     Ensure the recipes capture the signature sound, instrumentation, and mixing techniques of that specific song.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type.
@@ -548,13 +566,17 @@ export const adaptRecipeToMyPlugins = async (recipe: SavedRecipe, myPlugins: VST
   };
 };
 
-export const getDetailedParameters = async (recipe: BeatRecipe): Promise<RecipeParameters> => {
+export const getDetailedParameters = async (recipe: BeatRecipe): Promise<any> => {
   const prompt = `
     For the following Beat Recipe, provide in-depth plugin parameters and beginner-friendly explanations for EVERY plugin mentioned.
     
-    IMPORTANT: You must also provide 'instrumentDives'. For each instrument used in the recipe:
-    1. 'sourceSettings': Specific internal parameters of the instrument plugin itself (e.g., Oscillator settings, ADSR, Filter Cutoff within the synth).
-    2. 'preFxAdvice': What the user should do to the raw instrument sound to get it ready BEFORE they even touch the FX chain.
+    Also provide a 'mixingAdvice' section and an 'arrangement' guide for the beat (Intro, Verse, Hook, Bridge, Outro).
+    
+    IMPORTANT: If the recipe includes any analog instruments (like Fender Stratocaster, Korg Minilogue XD, etc.), provide a 'analogDives' section.
+    For each analog instrument:
+    1. 'instrumentName': The name of the instrument.
+    2. 'technique': Specific playing technique or advice (e.g., "Use the neck pickup for a warmer tone", "Play with an aggressive flamenco attack").
+    3. 'settings': Recommended physical knob/switch settings on the hardware itself.
 
     Recipe: ${recipe.title} (${recipe.style})
     Description: ${recipe.description}
@@ -574,60 +596,68 @@ export const getDetailedParameters = async (recipe: BeatRecipe): Promise<RecipeP
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          recipeTitle: { type: Type.STRING },
-          instrumentDives: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                instrumentName: { type: Type.STRING },
-                sourceSettings: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      parameter: { type: Type.STRING },
-                      value: { type: Type.STRING },
-                      explanation: { type: Type.STRING }
-                    },
-                    required: ["parameter", "value", "explanation"]
-                  }
-                },
-                preFxAdvice: { type: Type.STRING }
-              },
-              required: ["instrumentName", "sourceSettings", "preFxAdvice"]
-            }
+          arrangement: {
+            type: Type.OBJECT,
+            properties: {
+              intro: { type: Type.STRING },
+              verse: { type: Type.STRING },
+              hook: { type: Type.STRING },
+              bridge: { type: Type.STRING },
+              outro: { type: Type.STRING }
+            },
+            required: ["intro", "verse", "hook", "bridge", "outro"]
           },
-          dives: {
+          mixingAdvice: { type: Type.STRING },
+          deepDives: {
             type: Type.ARRAY,
             items: {
               type: Type.OBJECT,
               properties: {
                 pluginName: { type: Type.STRING },
+                whyItWorks: { type: Type.STRING },
+                keySettings: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      parameter: { type: Type.STRING },
+                      value: { type: Type.STRING }
+                    },
+                    required: ["parameter", "value"]
+                  }
+                }
+              },
+              required: ["pluginName", "whyItWorks", "keySettings"]
+            }
+          },
+          analogDives: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                instrumentName: { type: Type.STRING },
+                technique: { type: Type.STRING },
                 settings: {
                   type: Type.ARRAY,
                   items: {
                     type: Type.OBJECT,
                     properties: {
                       parameter: { type: Type.STRING },
-                      value: { type: Type.STRING },
-                      explanation: { type: Type.STRING }
+                      value: { type: Type.STRING }
                     },
-                    required: ["parameter", "value", "explanation"]
+                    required: ["parameter", "value"]
                   }
-                },
-                proTip: { type: Type.STRING }
+                }
               },
-              required: ["pluginName", "settings", "proTip"]
+              required: ["instrumentName", "technique", "settings"]
             }
-          },
-          mixingAdvice: { type: Type.STRING }
+          }
         },
-        required: ["recipeTitle", "instrumentDives", "dives", "mixingAdvice"]
+        required: ["arrangement", "mixingAdvice", "deepDives"]
       }
     }
   });
 
-  const jsonStr = response.text?.trim() || '{"dives": []}';
+  const jsonStr = response.text?.trim() || '{"deepDives": []}';
   return JSON.parse(jsonStr);
 };

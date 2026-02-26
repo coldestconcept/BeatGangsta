@@ -326,8 +326,8 @@ export const Mascot: React.FC<MascotProps> = ({
         </linearGradient>
 
         <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#3b82f6" />
-          <stop offset="100%" stopColor="#1e40af" />
+          <stop offset="0%" stopColor={glowColor === '#ef4444' ? '#ff4d4d' : '#3b82f6'} />
+          <stop offset="100%" stopColor={glowColor === '#ef4444' ? '#8b0000' : '#1e40af'} />
         </linearGradient>
 
         <linearGradient id="silkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -421,7 +421,7 @@ export const Mascot: React.FC<MascotProps> = ({
       )}
 
       <circle cx="500" cy="580" r="360" fill="black" />
-      <circle cx="500" cy="580" r="335" fill="#1e50ff" />
+      <circle cx="500" cy="580" r="335" fill={glowColor === '#ef4444' ? '#ff1a1a' : '#1e50ff'} />
       <circle cx="500" cy="580" r="350" stroke="black" strokeWidth="20" fill="none" />
 
       <g>

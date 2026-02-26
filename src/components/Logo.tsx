@@ -63,6 +63,7 @@ export const Logo: React.FC<LogoProps> = ({
       isCigarEquipped={isCigarEquipped}
       isTossingCigar={isTossingCigar}
       showChefHat={showChefHat}
+      theme={theme}
       glowColor={theme === 'crazy-bird' ? '#ef4444' : (theme as string) === 'hustle-time' ? '#facc15' : theme === 'chef-mode' ? '#ffffff' : '#0ea5e9'} 
       className="relative z-10" 
     />

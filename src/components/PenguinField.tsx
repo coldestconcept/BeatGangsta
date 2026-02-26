@@ -11,27 +11,34 @@ const ClubPenguinGhost: React.FC<{ className?: string }> = ({ className }) => (
     <style>
       {`
         @keyframes shiftBody {
-          0%, 100% { fill: #2563eb; }
-          25% { fill: #1e40af; }
-          50% { fill: #3b82f6; }
-          75% { fill: #1d4ed8; }
+          0%, 100% { fill: #ef4444; }
+          25% { fill: #dc2626; }
+          50% { fill: #f87171; }
+          75% { fill: #b91c1c; }
         }
         @keyframes shiftBelly {
-          0%, 100% { fill: #dbeafe; }
-          25% { fill: #bfdbfe; }
-          50% { fill: #eff6ff; }
-          75% { fill: #f0f9ff; }
+          0%, 100% { fill: #fee2e2; }
+          25% { fill: #fecaca; }
+          50% { fill: #fef2f2; }
+          75% { fill: #fff1f2; }
         }
         @keyframes shiftAccent {
-          0%, 100% { fill: #1e3a8a; stroke: #1e3a8a; }
-          25% { fill: #1e1b4b; stroke: #1e1b4b; }
-          50% { fill: #1d4ed8; stroke: #1d4ed8; }
-          75% { fill: #2563eb; stroke: #2563eb; }
+          0%, 100% { fill: #991b1b; stroke: #991b1b; }
+          25% { fill: #7f1d1d; stroke: #7f1d1d; }
+          50% { fill: #b91c1c; stroke: #b91c1c; }
+          75% { fill: #dc2626; stroke: #dc2626; }
+        }
+        @keyframes shiftBeak {
+          0%, 100% { fill: #facc15; }
+          25% { fill: #eab308; }
+          50% { fill: #fde047; }
+          75% { fill: #ca8a04; }
         }
         .p-body { animation: shiftBody 12s infinite ease-in-out; }
         .p-belly { animation: shiftBelly 12s infinite ease-in-out; }
         .p-accent { animation: shiftAccent 12s infinite ease-in-out; }
         .p-accent-stroke { animation: shiftAccent 12s infinite ease-in-out; fill: none; }
+        .p-beak { animation: shiftBeak 12s infinite ease-in-out; }
       `}
     </style>
 
@@ -53,8 +60,8 @@ const ClubPenguinGhost: React.FC<{ className?: string }> = ({ className }) => (
       />
     </g>
 
-    {/* Beak - Stylized blue */}
-    <path className="p-accent" d="M42 52 L58 52 L50 62 Z" />
+    {/* Beak - Stylized yellow */}
+    <path className="p-beak" d="M42 52 L58 52 L50 62 Z" />
     
     {/* Eyes - Positioned slightly lower due to bandana */}
     <circle className="p-accent" cx="42" cy="45" r="5" />

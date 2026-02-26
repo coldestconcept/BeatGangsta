@@ -1,6 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { SavedRecipe, AppTheme, Folder, UIPreset, VSTPlugin, SharedSession } from '../types';
+import { equipmentDetails } from '../data/equipmentDetails';
 
 interface VaultProps {
   theme: AppTheme;
@@ -336,6 +337,9 @@ export const Vault: React.FC<VaultProps> = ({
                           <h3 onClick={() => onOpen(recipe)} className="text-sm sm:text-lg font-black tracking-tight truncate cursor-pointer hover:underline">
                             {recipe.title}
                           </h3>
+                          <div className="marquee-container overflow-hidden whitespace-nowrap">
+                            <p className="marquee text-xs opacity-70 animate-marquee">{equipmentDetails[recipe.title]}</p>
+                          </div>
                           <div className="flex flex-wrap items-center gap-3 mt-1 text-[8px] sm:text-[10px] font-black uppercase tracking-widest opacity-80">
                             <span>{recipe.style}</span>
                             {recipe.artistTypes && recipe.artistTypes.length > 0 && (

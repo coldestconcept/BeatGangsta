@@ -14,7 +14,87 @@ import { Hourglass } from './components/Hourglass';
 import { RecipeViewerModal } from './components/RecipeViewerModal';
 import { CollaborationModal } from './components/CollaborationModal';
 import { FriendsInfoModal } from './components/FriendsInfoModal';
+import { AnalogEquipmentModal } from './components/AnalogEquipmentModal';
 import { AnimatePresence } from 'motion/react';
+
+const CrazyBirdIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <div className={`${className} relative group`}>
+    <svg 
+      viewBox="0 0 32 32" 
+      xmlns="http://www.w3.org/2000/svg" 
+      className="w-full h-full drop-shadow-[0_0_12px_rgba(239,68,68,0.9)] transition-transform group-hover:scale-125"
+    >
+      <defs>
+        <linearGradient id="crazyBirdGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#ff0000" />
+          <stop offset="40%" stopColor="#7c3aed" />
+          <stop offset="100%" stopColor="#000000" />
+        </linearGradient>
+        <filter id="crazyGlitch">
+          <feOffset in="SourceGraphic" dx="1" dy="0" result="offset1" />
+          <feOffset in="SourceGraphic" dx="-1" dy="0" result="offset2" />
+          <feBlend in="offset1" in2="offset2" mode="screen" />
+        </filter>
+      </defs>
+
+      {/* Chaotic Tail Feathers */}
+      <path d="M20 18 L30 24 L28 28 L18 22 Z" fill="#7c3aed" className="animate-pulse" />
+      <path d="M22 16 L32 20 L30 24 L20 20 Z" fill="#ff0000" className="animate-pulse" style={{ animationDelay: '0.1s' }} />
+      <path d="M18 20 L26 30 L22 32 L16 24 Z" fill="#4c1d95" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
+
+      {/* Aggressive Body Shape */}
+      <path 
+        d="M15 5 
+           C10 5, 5 8, 5 15 
+           C5 22, 10 28, 16 30 
+           C22 32, 28 28, 29 18 
+           C30 8, 25 5, 18 5 
+           Z" 
+        fill="url(#crazyBirdGrad)" 
+        className="filter drop-shadow-lg"
+      />
+
+      {/* Spiky Mohawk / Crest */}
+      <path d="M15 5 L12 -2 L16 3 L20 -2 L22 5" fill="#ff0000" stroke="#000" strokeWidth="0.5" />
+      <path d="M11 7 L8 1 L12 6" fill="#7c3aed" stroke="#000" strokeWidth="0.5" />
+
+      {/* Cybernetic Glitch Wing */}
+      <path 
+        d="M12 14 L0 8 L4 24 L14 18 Z" 
+        fill="#ff0000" 
+        opacity="0.9"
+        className="animate-bounce origin-right"
+        style={{ animationDuration: '0.3s' }}
+      />
+      <path 
+        d="M13 15 L2 11 L5 22 L14 17 Z" 
+        fill="#7c3aed" 
+        opacity="0.5"
+        className="animate-pulse"
+      />
+
+      {/* Sharp Face Mask */}
+      <path d="M5 15 C4 16, 4 20, 5 22 L11 22 C10 20, 10 16, 10 15 Z" fill="#000" />
+
+      {/* Glowing Psycho Eyes */}
+      <g className="animate-pulse">
+        <circle cx="12" cy="18" r="2" fill="#fff" />
+        <circle cx="12" cy="18" r="1" fill="#ff0000" />
+        <circle cx="12" cy="18" r="0.4" fill="#000" />
+      </g>
+
+      {/* Metallic Beak */}
+      <path d="M5 17 L-2 20 L5 23 Z" fill="#fbbf24" stroke="#000" strokeWidth="0.5" />
+      <path d="M5 17 L1 19 L5 20 Z" fill="#f59e0b" />
+
+      {/* Digital Glitch Artifacts */}
+      <rect x="22" y="12" width="6" height="1.5" fill="#fff" opacity="0.6" className="animate-ping" />
+      <rect x="2" y="26" width="10" height="0.8" fill="#7c3aed" opacity="0.6" className="animate-ping" style={{ animationDelay: '0.4s' }} />
+      <rect x="18" y="25" width="4" height="0.5" fill="#ff0000" opacity="0.8" className="animate-ping" style={{ animationDelay: '0.7s' }} />
+    </svg>
+  </div>
+);
+
 
 // Moved outside to prevent remounting flashes
 export interface LogoProps {
@@ -157,6 +237,11 @@ const App: React.FC = () => {
   const [hasUnlockedChefTheme, setHasUnlockedChefTheme] = useState(() => localStorage.getItem('bg_chef_unlocked') === 'true');
   const [showChefUnlockPopup, setShowChefUnlockPopup] = useState(false);
   const [hasUnlockedBluntToggle, setHasUnlockedBluntToggle] = useState(false);
+  const [showAnalogModal, setShowAnalogModal] = useState(false);
+  const [analogInstruments, setAnalogInstruments] = useState<string[]>([]);
+  const [analogHardware, setAnalogHardware] = useState<string[]>([]);
+  const [excludeAnalog, setExcludeAnalog] = useState(false);
+  const [dawType, setDawType] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
   const [showVault, setShowVault] = useState(false);
   const [viewingRecipe, setViewingRecipe] = useState<SavedRecipe | null>(null);
@@ -557,21 +642,35 @@ const App: React.FC = () => {
     setError(null);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const processFile = (file: File) => {
+    const fileName = file.name.toLowerCase();
+    if (fileName.includes('reaper')) {
+      setDawType('Reaper');
+    } else if (fileName.includes('studio one') || fileName.includes('studioone')) {
+      setDawType('Studio One');
+    } else {
+      setDawType(null);
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target?.result as string;
       if (content) {
         setCsvInput(content);
         parsePlugins(content);
+        setShowAnalogModal(true);
       }
     };
     reader.onerror = () => {
       setError("Failed to read the file. Please try again.");
     };
     reader.readAsText(file);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -590,18 +689,7 @@ const App: React.FC = () => {
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (content) {
-        setCsvInput(content);
-        parsePlugins(content);
-      }
-    };
-    reader.onerror = () => {
-      setError("Failed to read the file. Please try again.");
-    };
-    reader.readAsText(file);
+    processFile(file);
   };
 
   const handleGenerate = async () => {
@@ -609,7 +697,7 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getBeatRecommendations(plugins);
+      const response = await getBeatRecommendations(plugins, analogInstruments, analogHardware, excludeAnalog, dawType);
       setRecipes(response.recipes);
       const newHistory: HistoryItem[] = response.recipes.map(r => ({
         ...r,
@@ -628,7 +716,7 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getCustomBeatRecommendations(plugins, typeBeatSearch.trim());
+      const response = await getCustomBeatRecommendations(plugins, typeBeatSearch.trim(), analogInstruments, analogHardware, excludeAnalog, dawType);
       setRecipes(response.recipes);
       const newHistory: HistoryItem[] = response.recipes.map(r => ({
         ...r,
@@ -647,7 +735,7 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await getSongBeatRecommendations(plugins, songSearch.trim());
+      const response = await getSongBeatRecommendations(plugins, songSearch.trim(), analogInstruments, analogHardware, excludeAnalog, dawType);
       setRecipes(response.recipes);
       const newHistory: HistoryItem[] = response.recipes.map(r => ({
         ...r,
@@ -715,12 +803,12 @@ const App: React.FC = () => {
   }[knifeStyle];
 
   const themeClasses = theme === 'coldest' 
-    ? "from-sky-200 via-sky-300 to-sky-400 text-sky-900"
+    ? "bg-sky-400 text-sky-900"
     : theme === 'crazy-bird'
-    ? "from-red-500 via-rose-500 to-orange-500 text-red-50"
+    ? "bg-red-500 text-red-50"
     : theme === 'chef-mode'
-    ? "from-amber-200 via-yellow-300 to-orange-400 text-orange-900"
-    : "from-emerald-400 via-green-500 to-teal-500 text-emerald-50";
+    ? "bg-yellow-400 text-orange-900"
+    : "bg-emerald-500 text-emerald-50";
 
   const actionBtnClasses = `text-[9px] px-3 py-1.5 rounded-full font-black uppercase border transition-all truncate whitespace-nowrap flex items-center gap-1.5 hover:scale-105 active:scale-95`;
   const mobileToolbarBtnClasses = `flex flex-col items-center justify-center gap-1 p-2 flex-1 transition-all active:scale-90`;
@@ -729,7 +817,7 @@ const App: React.FC = () => {
   const mainBlurClass = 'backdrop-blur-2xl';
 
   return (
-    <div className={`min-h-screen transition-all duration-700 flex flex-col bg-gradient-to-br ${themeClasses} font-sans selection:bg-sky-200 pb-20 sm:pb-0`}>
+    <div className={`min-h-screen w-full overflow-x-hidden transition-all duration-700 flex flex-col ${themeClasses} font-sans selection:bg-sky-200 pb-20 sm:pb-0`}>
       {theme === 'coldest' && <SnowFlurry />}
       <div className={`h-8 flex items-center justify-between px-3 text-[11px] font-bold select-none backdrop-blur-md border-b transition-all duration-500 z-[100] ${theme === 'coldest' ? 'bg-white/30 text-[#0c4a6e] border-white/20' : 'bg-black/40 text-red-100 border-red-900/30'}`}>
         <div className="flex items-center gap-2 relative">
@@ -1163,14 +1251,19 @@ const App: React.FC = () => {
           <div className="flex items-stretch justify-around h-20 px-4">
             <button onClick={cycleGrill} className={mobileToolbarBtnClasses}><span className="text-xl">💎</span><span className="text-[9px] font-black uppercase truncate max-w-[80px]">{grillLabel}</span></button>
             <button onClick={cycleKnife} className={mobileToolbarBtnClasses}><span className="text-xl">🔪</span><span className="text-[9px] font-black uppercase truncate max-w-[80px]">{knifeLabel}</span></button>
-            <button onClick={toggleTheme} className={mobileToolbarBtnClasses}><span className="text-xl">{theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? '🐦' : '💰'}</span><span className="text-[9px] font-black uppercase truncate max-w-[80px]">{theme === 'chef-mode' ? 'Chef' : 'Theme'}</span></button>
+            <button onClick={toggleTheme} className={mobileToolbarBtnClasses}>
+              <span className="text-xl flex items-center justify-center">
+                {theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? <CrazyBirdIcon className="w-6 h-6" /> : '💰'}
+              </span>
+              <span className="text-[9px] font-black uppercase truncate max-w-[80px]">{theme === 'chef-mode' ? 'Chef' : 'Theme'}</span>
+            </button>
             <button onClick={() => setShowVault(true)} className={mobileToolbarBtnClasses}><span className="text-xl">📁</span><span className="text-[9px] font-black uppercase">Vault</span></button>
           </div>
         </div>
       </div>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-4 sm:py-12 relative z-10">
-        <div className="absolute top-0 left-6 sm:top-2 sm:left-6 z-40 pointer-events-none w-full">
+        <div className="absolute top-4 left-6 sm:top-6 sm:left-6 z-40 pointer-events-none w-full">
             <button 
               onClick={saveUIPreset}
               className={`pointer-events-auto flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full border shadow-xl transition-all hover:scale-105 active:scale-95 group ${mainBlurClass} ${theme === 'coldest' ? 'bg-white/40 border-sky-100 text-sky-800' : theme === 'chef-mode' ? 'bg-white/60 border-orange-100 text-orange-950 shadow-orange-900/10' : 'bg-black/40 border-white/10 text-white'}`}
@@ -1199,7 +1292,9 @@ const App: React.FC = () => {
                 onDrop={handleDrop}
                 className={`w-full h-80 p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 outline-none ${mainBlurClass} border shadow-inner rounded-[2rem] sm:rounded-[3rem] ${isDragging ? 'scale-[1.02] border-sky-500 bg-sky-500/10' : ''} ${theme === 'coldest' ? 'bg-white/40 border-white text-slate-800 hover:bg-white/60' : theme === 'chef-mode' ? 'bg-white/60 border-white text-slate-900 hover:bg-white/80' : 'bg-black/60 border-white/10 text-white hover:bg-black/80'}`}
               >
-                <div className="text-4xl mb-4 opacity-50">{theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? '🐦' : '💰'}</div>
+                <div className="text-4xl mb-4 opacity-50 flex items-center justify-center">
+                  {theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? <CrazyBirdIcon className="w-10 h-10" /> : '💰'}
+                </div>
                 <p className="text-lg font-black tracking-tight mb-2">Drag & Drop your plugin file here</p>
                 <p className="text-sm font-bold opacity-60 mb-6">or click to browse</p>
                 <p className="text-xs font-bold opacity-40 uppercase tracking-widest">Click the Help button below to find your file</p>
@@ -1285,6 +1380,28 @@ const App: React.FC = () => {
                   {loading ? "Searching..." : "Search Song"}
                 </button>
               </div>
+
+              {(analogInstruments.length > 0 || analogHardware.length > 0) && (
+                <div className="flex items-center justify-center gap-3 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={excludeAnalog} 
+                      onChange={(e) => setExcludeAnalog(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 text-sky-500 focus:ring-sky-500"
+                    />
+                    <span className={`text-sm font-bold ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-700' : 'text-slate-300'}`}>
+                      Exclude my analog equipment from recipes
+                    </span>
+                  </label>
+                  <button 
+                    onClick={() => setShowAnalogModal(true)}
+                    className={`text-xs font-bold underline opacity-70 hover:opacity-100 transition-opacity ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-700' : 'text-slate-300'}`}
+                  >
+                    (Edit Equipment)
+                  </button>
+                </div>
+              )}
             </section>
             {recipes.length > 0 && (
               <section className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-bottom-12 duration-1000">
@@ -1301,6 +1418,16 @@ const App: React.FC = () => {
         )}
       </main>
       <footer className="py-16 text-center opacity-40 select-none"><p className="text-[10px] font-black uppercase tracking-[0.8em]">{currentAppName} x ColdestConcept / 2026</p></footer>
+      
+      <AnalogEquipmentModal 
+        isOpen={showAnalogModal} 
+        onClose={() => setShowAnalogModal(false)} 
+        theme={theme}
+        onSave={(instruments, hardware) => {
+          setAnalogInstruments(instruments);
+          setAnalogHardware(hardware);
+        }}
+      />
     </div>
   );
 };
