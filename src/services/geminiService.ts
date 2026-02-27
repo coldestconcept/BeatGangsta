@@ -126,7 +126,7 @@ export const enrichPluginLibrary = async (
 
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-3.flash-preview",
+          model: "gemini-3-flash-preview",
           contents: prompt,
           config: {
             tools: [{ googleSearch: {} }],
