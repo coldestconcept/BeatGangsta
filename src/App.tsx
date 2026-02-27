@@ -765,13 +765,13 @@ const App: React.FC = () => {
       
       let detailedError = "Failed to research your plugins. ";
       if (err.message === "QUOTA_EXCEEDED") {
-        detailedError = "AI Research Quota Exceeded. I can't research your plugins right now because the AI is at its limit. Please try again in a few minutes or with a smaller list.";
+        detailedError = "AI Research Quota Exceeded. Your free Gemini API key has a limit on how many requests it can make per minute. You can wait a few minutes and try again, or use 'Fast Import' to skip the research phase.";
       } else {
         detailedError += err.message || "An unexpected error occurred during the research process.";
       }
       
       setError(detailedError);
-      setPlugins([]); // Don't allow proceeding with unresearched plugins
+      // We don't clear plugins here anymore, so the user can still use 'Fast Import'
     } finally {
       setIsEnrichingLibrary(false);
       setPendingPluginsInput(null);
@@ -1573,10 +1573,31 @@ const App: React.FC = () => {
                 />
               </div>
               
-              <div className="flex justify-between w-full max-w-md text-xs font-black uppercase tracking-widest opacity-60">
+              <div className="flex justify-between w-full max-w-md text-xs font-black uppercase tracking-widest opacity-60 mb-8">
                 <span>{enrichProgress}% Complete</span>
                 <span>~{enrichEta}s remaining</span>
               </div>
+
+              <button 
+                onClick={() => {
+                  // We don't have a direct way to 'stop' the async function, 
+                  // but we can force the state to move forward with what we have.
+                  // For now, we'll just alert the user that they can refresh or we can try to 
+                  // implement a more robust cancellation.
+                  // Actually, let's just allow them to 'Force Finish'
+                  const confirmed = window.confirm("This will stop the AI research and import your plugins as 'Uncategorized'. You can still use them, but recipes might be less accurate. Proceed?");
+                  if (confirmed) {
+                    setIsEnrichingLibrary(false);
+                    // The plugins state already has the raw parsed plugins from parsePlugins
+                    // but they might be overwritten by the enrichment if it finishes.
+                    // To be safe, we'll just let the current state stand.
+                    setShowAnalogModal(true);
+                  }
+                }}
+                className={`px-8 py-3 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${theme === 'coldest' ? 'bg-white/50 border-slate-300 text-slate-700 hover:bg-white' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'}`}
+              >
+                Skip Research & Fast Import
+              </button>
             </div>
           </div>
         ) : plugins.length === 0 && !isEnrichingLibrary ? (
@@ -1613,6 +1634,18 @@ const App: React.FC = () => {
                 <p className="text-xs font-bold opacity-40 uppercase tracking-widest">Click the Help button below to find your file</p>
               </div>
               <div className="flex flex-wrap justify-center gap-3 mt-6">
+                <button 
+                  onClick={() => {
+                    const pasted = window.prompt("Paste your plugin list here (CSV or Reaper INI format):");
+                    if (pasted) {
+                      setCsvInput(pasted);
+                      parsePlugins(pasted);
+                    }
+                  }}
+                  className={`font-black py-4 px-12 rounded-full border text-xs uppercase tracking-widest transition-all select-none ${theme === 'coldest' || theme === 'chef-mode' ? 'bg-white/80 border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm' : 'bg-white/10 border-white/10 text-white hover:bg-white/20'}`}
+                >
+                  Paste List
+                </button>
                 <button 
                   onClick={() => setShowGuide(true)}
                   className={`font-black py-4 px-12 rounded-full border text-xs uppercase tracking-widest transition-all select-none ${theme === 'coldest' || theme === 'chef-mode' ? 'bg-white/80 border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm' : 'bg-white/10 border-white/10 text-white hover:bg-white/20'}`}

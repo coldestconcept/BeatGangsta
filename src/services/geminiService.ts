@@ -119,7 +119,7 @@ export const enrichPluginLibrary = async (
     onProgress(progress, estimatedTimeLeft);
   };
 
-  const processBatch = async (batch: VSTPlugin[]): Promise<VSTPlugin[]> => {
+  const processBatch = async (batch: VSTPlugin[], retryCount = 0): Promise<VSTPlugin[]> => {
     const prompt = `
       You are a VST plugin expert. Research the following ${batch.length} plugins and provide a JSON array of objects.
       
@@ -176,22 +176,29 @@ export const enrichPluginLibrary = async (
       updateProgress(batch.length);
       return enrichedBatch;
     } catch (error: any) {
-      console.error(`Error enriching batch:`, error);
       const errorMsg = error?.message || "";
-      if (errorMsg.includes("429") || errorMsg.toLowerCase().includes("quota")) {
+      const isRateLimit = errorMsg.includes("429") || errorMsg.toLowerCase().includes("quota");
+      
+      if (isRateLimit && retryCount < 3) {
+        const waitTime = Math.pow(2, retryCount) * 5000; // 5s, 10s, 20s
+        console.warn(`Rate limit hit. Retrying in ${waitTime/1000}s... (Attempt ${retryCount + 1})`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        return processBatch(batch, retryCount + 1);
+      }
+
+      console.error(`Error enriching batch:`, error);
+      if (isRateLimit) {
         throw new Error("QUOTA_EXCEEDED");
       }
       
-      // If a batch fails, we can't easily recover without strictness issues, 
-      // but let's try to return uncategorized for this batch to keep moving if it's not a quota issue
-      // However, user wants strictness, so we throw.
       throw error;
     }
   };
 
-  // Process plugins in batches of 5 with a concurrency of 3 batches (15 plugins at a time)
+  // Process plugins in batches of 5 with a concurrency of 2 batches (10 plugins at a time)
+  // Reduced concurrency and added delay to stay under free tier RPM limits
   const batchSize = 5;
-  const concurrency = 3;
+  const concurrency = 2;
   const enrichedPlugins: VSTPlugin[] = [];
   
   for (let i = 0; i < plugins.length; i += batchSize * concurrency) {
@@ -203,6 +210,11 @@ export const enrichPluginLibrary = async (
     
     const results = await Promise.all(batches.map(processBatch));
     results.forEach(batchResult => enrichedPlugins.push(...batchResult));
+
+    // Add a small breather between chunks to avoid hitting RPM limits
+    if (i + batchSize * concurrency < plugins.length) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
 
   return enrichedPlugins;
