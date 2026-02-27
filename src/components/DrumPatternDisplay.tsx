@@ -169,7 +169,7 @@ export const DrumPatternDisplay: React.FC<DrumPatternDisplayProps> = ({ patterns
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-        <div className="flex lg:flex-col justify-around gap-4 p-4 rounded-2xl bg-black/5 dark:bg-white/5">
+        <div className="flex lg:flex-col justify-center items-center gap-4 p-4 rounded-2xl bg-black/5 dark:bg-white/5 w-full lg:w-auto">
           <SwingMeter label="Hi-Hat" percentage={currentPattern.swing?.hiHat} colorClass={activeText} />
           <SwingMeter label={currentPattern.snare.isClap ? 'Clap' : 'Snare'} percentage={currentPattern.swing?.snare} colorClass={activeText} />
           <SwingMeter label="Kick" percentage={currentPattern.swing?.kick} colorClass={activeText} />

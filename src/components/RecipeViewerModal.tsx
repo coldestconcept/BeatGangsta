@@ -244,70 +244,75 @@ export const RecipeViewerModal: React.FC<RecipeViewerModalProps> = ({ recipe, pr
                 </div>
               )}
 
-              <div className="space-y-12">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.6em] text-slate-400 flex items-center gap-6">
-                  <span className="w-12 h-[2px] bg-slate-300 rounded-full" />
-                  Signal Chain Protocols
-                </h3>
-                <div className="grid grid-cols-1 gap-12">
-                  {params.dives.map((dive, idx) => (
-                    <div key={idx} className="flex flex-col bg-white border border-slate-200 rounded-[4rem] overflow-hidden shadow-2xl hover:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] transition-all duration-700">
-                      <div className="px-10 sm:px-16 py-8 sm:py-10 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                        <h4 className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900 uppercase">
-                          {dive.pluginName}
-                        </h4>
-                        <span className="text-[10px] font-black bg-slate-900 text-white px-6 py-2 rounded-full uppercase tracking-widest shadow-lg">
-                          FX Module {idx + 1}
-                        </span>
-                      </div>
-                      
-                      <div className="p-10 sm:p-16 space-y-12">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                          {dive.settings.map((set, sIdx) => (
-                            <div key={sIdx} className="flex flex-col p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-300">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Parameter</span>
-                              <span className="text-lg font-black text-slate-900 mb-4">{set.parameter}</span>
-                              <div className="mt-auto">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 block mb-2">Value</span>
-                                <span className="text-3xl font-black text-orange-500 block mb-4">{set.value}</span>
-                                <p className="text-[12px] font-bold leading-relaxed text-slate-500 border-t border-slate-200 pt-4">{set.explanation}</p>
+              {params.dives && params.dives.length > 0 && (
+                <div className="space-y-12">
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.6em] text-slate-400 flex items-center gap-6">
+                    <span className="w-12 h-[2px] bg-slate-300 rounded-full" />
+                    Signal Chain Protocols
+                  </h3>
+                  <div className="grid grid-cols-1 gap-12">
+                    {params.dives.map((dive, idx) => (
+                      <div key={idx} className="flex flex-col bg-white border border-slate-200 rounded-[4rem] overflow-hidden shadow-2xl hover:shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] transition-all duration-700">
+                        <div className="px-10 sm:px-16 py-8 sm:py-10 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                          <h4 className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-900 uppercase">
+                            {dive.pluginName}
+                          </h4>
+                          <span className="text-[10px] font-black bg-slate-900 text-white px-6 py-2 rounded-full uppercase tracking-widest shadow-lg">
+                            FX Module {idx + 1}
+                          </span>
+                        </div>
+                        
+                        <div className="p-10 sm:p-16 space-y-12">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                            {dive.settings?.map((set, sIdx) => (
+                              <div key={sIdx} className="flex flex-col p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 hover:bg-white hover:shadow-xl transition-all duration-300">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3">Parameter</span>
+                                <span className="text-lg font-black text-slate-900 mb-4">{set.parameter}</span>
+                                <div className="mt-auto">
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-orange-600 block mb-2">Value</span>
+                                  <span className="text-3xl font-black text-orange-500 block mb-4">{set.value}</span>
+                                  <p className="text-[12px] font-bold leading-relaxed text-slate-500 border-t border-slate-200 pt-4">{set.explanation}</p>
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
 
-                        <div className="p-10 bg-orange-50 rounded-[3rem] border-2 border-orange-100 shadow-inner">
-                          <p className="text-lg sm:text-xl font-black leading-relaxed text-slate-900 italic">
-                            <span className="font-black uppercase tracking-[0.4em] text-orange-600 mr-4 not-italic">Pro Tip:</span>
-                            {dive.proTip}
-                          </p>
+                          <div className="p-10 bg-orange-50 rounded-[3rem] border-2 border-orange-100 shadow-inner">
+                            <p className="text-lg sm:text-xl font-black leading-relaxed text-slate-900 italic">
+                              <span className="font-black uppercase tracking-[0.4em] text-orange-600 mr-4 not-italic">Pro Tip:</span>
+                              {dive.proTip}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Mixing Advice */}
-              <div className="p-16 sm:p-24 bg-slate-900 rounded-[4rem] sm:rounded-[6rem] text-white shadow-[0_60px_120px_-20px_rgba(0,0,0,0.4)] relative overflow-hidden group">
-                 <div className="absolute top-0 right-0 p-24 opacity-10 scale-[2] rotate-12 transition-transform group-hover:rotate-0 duration-1000">
-                  <svg className="w-64 h-64" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-                  </svg>
+              {params.mixingAdvice && (
+                <div className="p-16 sm:p-24 bg-slate-900 rounded-[4rem] sm:rounded-[6rem] text-white shadow-[0_60px_120px_-20px_rgba(0,0,0,0.4)] relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 p-24 opacity-10 scale-[2] rotate-12 transition-transform group-hover:rotate-0 duration-1000">
+                    <svg className="w-64 h-64" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-[12px] font-black uppercase mb-12 tracking-[0.6em] text-orange-400 flex items-center gap-6">
+                    <span className="w-12 sm:w-20 h-[3px] bg-orange-400 rounded-full" />
+                    Engineering Verdict
+                  </h3>
+                  <p className="text-2xl sm:text-5xl font-black leading-[1.2] max-w-5xl relative z-10 tracking-tighter">
+                    {params.mixingAdvice}
+                  </p>
                 </div>
-                <h3 className="text-[12px] font-black uppercase mb-12 tracking-[0.6em] text-orange-400 flex items-center gap-6">
-                  <span className="w-12 sm:w-20 h-[3px] bg-orange-400 rounded-full" />
-                  Engineering Verdict
-                </h3>
-                <p className="text-2xl sm:text-5xl font-black leading-[1.2] max-w-5xl relative z-10 tracking-tighter">
-                  {params.mixingAdvice}
-                </p>
-              </div>
+              )}
             </section>
           ) : (
             <div className="py-32 text-center space-y-8">
               <div className="text-8xl animate-pulse">📡</div>
-              <h3 className="text-2xl font-black text-slate-400 uppercase tracking-[0.4em]">Awaiting Parameter Sync...</h3>
+              <h3 className="text-2xl font-black text-slate-400 uppercase tracking-[0.4em]">Architecting Parameters...</h3>
+              <p className="text-sm font-bold text-slate-500">This record will automatically update when the deep dive is complete.</p>
             </div>
           )}
         </div>

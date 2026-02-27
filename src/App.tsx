@@ -1,8 +1,10 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { VSTPlugin, BeatRecipe, AppTheme, User, SavedRecipe, HistoryItem, Folder, KnifeStyle, PendantStyle, ChainStyle, RecipeParameters, UIPreset, SharedSession, DuragStyle } from './types';
-import { getBeatRecommendations, getDetailedParameters, getCustomBeatRecommendations, getSongBeatRecommendations } from './services/geminiService';
+import { VSTPlugin, BeatRecipe, AppTheme, User, SavedRecipe, HistoryItem, Folder, KnifeStyle, PendantStyle, ChainStyle, RecipeParameters, UIPreset, SharedSession, DuragStyle, Hardware } from './types';
+import { getBeatRecommendations, getDetailedParameters, getCustomBeatRecommendations, getSongBeatRecommendations, enrichPluginLibrary } from './services/geminiService';
+import { enrichHardware } from './services/enrichmentService';
 import { PluginCard } from './components/PluginCard';
+import { HardwareCard } from './components/HardwareCard';
 import { RecipeCard } from './components/RecipeCard';
 import { Mascot, GrillStyle } from './components/Mascot';
 import { AvianField } from './components/RavenField';
@@ -12,89 +14,13 @@ import { LeprechaunField } from './components/LeprechaunField';
 import { FoodField } from './components/FoodField';
 import { Hourglass } from './components/Hourglass';
 import { RecipeViewerModal } from './components/RecipeViewerModal';
+
 import { CollaborationModal } from './components/CollaborationModal';
 import { FriendsInfoModal } from './components/FriendsInfoModal';
 import { AnalogEquipmentModal } from './components/AnalogEquipmentModal';
+import { TrashModal } from './components/TrashModal';
 import { AnimatePresence } from 'motion/react';
-
-const CrazyBirdIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
-  <div className={`${className} relative group`}>
-    <svg 
-      viewBox="0 0 32 32" 
-      xmlns="http://www.w3.org/2000/svg" 
-      className="w-full h-full drop-shadow-[0_0_12px_rgba(239,68,68,0.9)] transition-transform group-hover:scale-125"
-    >
-      <defs>
-        <linearGradient id="crazyBirdGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#ff0000" />
-          <stop offset="40%" stopColor="#7c3aed" />
-          <stop offset="100%" stopColor="#000000" />
-        </linearGradient>
-        <filter id="crazyGlitch">
-          <feOffset in="SourceGraphic" dx="1" dy="0" result="offset1" />
-          <feOffset in="SourceGraphic" dx="-1" dy="0" result="offset2" />
-          <feBlend in="offset1" in2="offset2" mode="screen" />
-        </filter>
-      </defs>
-
-      {/* Chaotic Tail Feathers */}
-      <path d="M20 18 L30 24 L28 28 L18 22 Z" fill="#7c3aed" className="animate-pulse" />
-      <path d="M22 16 L32 20 L30 24 L20 20 Z" fill="#ff0000" className="animate-pulse" style={{ animationDelay: '0.1s' }} />
-      <path d="M18 20 L26 30 L22 32 L16 24 Z" fill="#4c1d95" className="animate-pulse" style={{ animationDelay: '0.2s' }} />
-
-      {/* Aggressive Body Shape */}
-      <path 
-        d="M15 5 
-           C10 5, 5 8, 5 15 
-           C5 22, 10 28, 16 30 
-           C22 32, 28 28, 29 18 
-           C30 8, 25 5, 18 5 
-           Z" 
-        fill="url(#crazyBirdGrad)" 
-        className="filter drop-shadow-lg"
-      />
-
-      {/* Spiky Mohawk / Crest */}
-      <path d="M15 5 L12 -2 L16 3 L20 -2 L22 5" fill="#ff0000" stroke="#000" strokeWidth="0.5" />
-      <path d="M11 7 L8 1 L12 6" fill="#7c3aed" stroke="#000" strokeWidth="0.5" />
-
-      {/* Cybernetic Glitch Wing */}
-      <path 
-        d="M12 14 L0 8 L4 24 L14 18 Z" 
-        fill="#ff0000" 
-        opacity="0.9"
-        className="animate-bounce origin-right"
-        style={{ animationDuration: '0.3s' }}
-      />
-      <path 
-        d="M13 15 L2 11 L5 22 L14 17 Z" 
-        fill="#7c3aed" 
-        opacity="0.5"
-        className="animate-pulse"
-      />
-
-      {/* Sharp Face Mask */}
-      <path d="M5 15 C4 16, 4 20, 5 22 L11 22 C10 20, 10 16, 10 15 Z" fill="#000" />
-
-      {/* Glowing Psycho Eyes */}
-      <g className="animate-pulse">
-        <circle cx="12" cy="18" r="2" fill="#fff" />
-        <circle cx="12" cy="18" r="1" fill="#ff0000" />
-        <circle cx="12" cy="18" r="0.4" fill="#000" />
-      </g>
-
-      {/* Metallic Beak */}
-      <path d="M5 17 L-2 20 L5 23 Z" fill="#fbbf24" stroke="#000" strokeWidth="0.5" />
-      <path d="M5 17 L1 19 L5 20 Z" fill="#f59e0b" />
-
-      {/* Digital Glitch Artifacts */}
-      <rect x="22" y="12" width="6" height="1.5" fill="#fff" opacity="0.6" className="animate-ping" />
-      <rect x="2" y="26" width="10" height="0.8" fill="#7c3aed" opacity="0.6" className="animate-ping" style={{ animationDelay: '0.4s' }} />
-      <rect x="18" y="25" width="4" height="0.5" fill="#ff0000" opacity="0.8" className="animate-ping" style={{ animationDelay: '0.7s' }} />
-    </svg>
-  </div>
-);
-
+import { Star, X } from 'lucide-react';
 
 // Moved outside to prevent remounting flashes
 export interface LogoProps {
@@ -141,7 +67,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 48, grillStyle, knifeStyle, d
       isCigarEquipped={isCigarEquipped}
       isTossingCigar={isTossingCigar}
       showChefHat={showChefHat}
-      glowColor={theme === 'crazy-bird' ? '#ef4444' : (theme as string) === 'hustle-time' ? '#facc15' : theme === 'chef-mode' ? '#ffffff' : '#0ea5e9'} 
+      glowColor={(theme as string) === 'hustle-time' ? '#facc15' : theme === 'chef-mode' ? '#ffffff' : '#0ea5e9'} 
       className="relative z-10" 
     />
   </div>
@@ -213,9 +139,63 @@ const App: React.FC = () => {
   });
 
   const [csvInput, setCsvInput] = useState<string>('');
-  const [plugins, setPlugins] = useState<VSTPlugin[]>([]);
+  const [plugins, setPlugins] = useState<VSTPlugin[]>(() => {
+    const saved = localStorage.getItem('bg_library');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [starredPlugins, setStarredPlugins] = useState<string[]>(() => {
+    const saved = localStorage.getItem('bg_starred_plugins');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [pluginToUnstar, setPluginToUnstar] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'vendor' | 'type'>('type');
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [folderToRemove, setFolderToRemove] = useState<string | null>(null);
+  const [deletedPlugins, setDeletedPlugins] = useState<VSTPlugin[]>(() => {
+    const saved = localStorage.getItem('bg_deleted_plugins');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [pendingPlaceholders, setPendingPlaceholders] = useState<any[]>([]);
+  const deletionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [showTrashModal, setShowTrashModal] = useState(false);
+  
+  useEffect(() => {
+    localStorage.setItem('bg_starred_plugins', JSON.stringify(starredPlugins));
+  }, [starredPlugins]);
+
+  useEffect(() => {
+    localStorage.setItem('bg_library', JSON.stringify(plugins));
+  }, [plugins]);
+
+  useEffect(() => {
+    localStorage.setItem('bg_deleted_plugins', JSON.stringify(deletedPlugins));
+  }, [deletedPlugins]);
+
+  const resetDeletionTimer = () => {
+    if (deletionTimerRef.current) clearTimeout(deletionTimerRef.current);
+    deletionTimerRef.current = setTimeout(() => {
+      setPendingPlaceholders([]);
+    }, 12000);
+  };
+
+  const handleUndo = (placeholderId: string) => {
+    const placeholder = pendingPlaceholders.find(p => p.id === placeholderId);
+    if (!placeholder) return;
+
+    // Remove from deletedPlugins
+    setDeletedPlugins(prev => prev.filter(dp => !placeholder.plugins.some((p: any) => p.name === dp.name && p.vendor === dp.vendor)));
+    
+    // Add back to plugins
+    setPlugins(prev => [...prev, ...placeholder.plugins]);
+    
+    // Remove placeholder
+    setPendingPlaceholders(prev => prev.filter(p => p.id !== placeholderId));
+  };
   const [recipes, setRecipes] = useState<BeatRecipe[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isEnrichingLibrary, setIsEnrichingLibrary] = useState(false);
+  const [enrichProgress, setEnrichProgress] = useState(0);
+  const [enrichEta, setEnrichEta] = useState(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [typeBeatSearch, setTypeBeatSearch] = useState<string>('');
   const [songSearch, setSongSearch] = useState<string>('');
@@ -238,8 +218,37 @@ const App: React.FC = () => {
   const [showChefUnlockPopup, setShowChefUnlockPopup] = useState(false);
   const [hasUnlockedBluntToggle, setHasUnlockedBluntToggle] = useState(false);
   const [showAnalogModal, setShowAnalogModal] = useState(false);
-  const [analogInstruments, setAnalogInstruments] = useState<string[]>([]);
-  const [analogHardware, setAnalogHardware] = useState<string[]>([]);
+  const [analogInstruments, setAnalogInstruments] = useState<Hardware[]>([]);
+  const [analogHardware, setAnalogHardware] = useState<Hardware[]>([]);
+  const [deletedInstruments, setDeletedInstruments] = useState<Hardware[]>([]);
+  const [deletedHardware, setDeletedHardware] = useState<Hardware[]>([]);
+  const [starredHardware, setStarredHardware] = useState<string[]>([]);
+
+  useEffect(() => {
+    const migrateAndEnrichHardware = async () => {
+      const oldInstruments = localStorage.getItem('bg_analog_instruments');
+      const oldHardware = localStorage.getItem('bg_analog_hardware');
+
+      if (oldInstruments || oldHardware) {
+        const instrumentsToMigrate = oldInstruments ? JSON.parse(oldInstruments) : [];
+        const hardwareToMigrate = oldHardware ? JSON.parse(oldHardware) : [];
+
+        if (instrumentsToMigrate.length > 0 && typeof instrumentsToMigrate[0] === 'string') {
+          const enrichedInstruments = await enrichHardware(instrumentsToMigrate);
+          setAnalogInstruments(enrichedInstruments);
+          localStorage.removeItem('bg_analog_instruments');
+        }
+
+        if (hardwareToMigrate.length > 0 && typeof hardwareToMigrate[0] === 'string') {
+          const enrichedHardware = await enrichHardware(hardwareToMigrate);
+          setAnalogHardware(enrichedHardware);
+          localStorage.removeItem('bg_analog_hardware');
+        }
+      }
+    };
+
+    migrateAndEnrichHardware();
+  }, []);
   const [excludeAnalog, setExcludeAnalog] = useState(false);
   const [dawType, setDawType] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
@@ -248,6 +257,39 @@ const App: React.FC = () => {
   const [activeSession, setActiveSession] = useState<SharedSession | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  const toggleStar = (itemName: string) => {
+    if (starredPlugins.includes(itemName)) {
+      setPluginToUnstar(itemName);
+    } else if (starredHardware.includes(itemName)) {
+      setStarredHardware(prev => prev.filter(n => n !== itemName));
+    } else {
+      if (plugins.some(p => p.name === itemName)) {
+        if (starredPlugins.length < 10) {
+          setStarredPlugins([...starredPlugins, itemName]);
+        } else {
+          setError("You can only star up to 10 plugins.");
+          setTimeout(() => setError(null), 3000);
+        }
+      } else {
+        if (starredHardware.length < 10) {
+          setStarredHardware([...starredHardware, itemName]);
+        } else {
+          setError("You can only star up to 10 hardware items.");
+          setTimeout(() => setError(null), 3000);
+        }
+      }
+    }
+  };
+
+
+
+  const confirmUnstar = () => {
+    if (pluginToUnstar) {
+      setStarredPlugins(starredPlugins.filter(p => p !== pluginToUnstar));
+      setPluginToUnstar(null);
+    }
+  };
 
   const currentAppName = highEyes ? "BeatRetard" : "BeatGenius";
   const [isSecretUnlocked, setIsSecretUnlocked] = useState(() => localStorage.getItem('bg_hustle_unlocked') === 'true');
@@ -358,7 +400,7 @@ const App: React.FC = () => {
       highEyes,
       isCigarEquipped,
       showChefHat,
-      bubbleColor: theme === 'crazy-bird' ? '#ef4444' : theme === 'chef-mode' ? '#fbbf24' : '#0ea5e9',
+      bubbleColor: theme === 'chef-mode' ? '#fbbf24' : '#0ea5e9',
       createdAt: new Date().toISOString(),
     };
     setPresets(prev => [...prev, autoPreset]);
@@ -379,6 +421,7 @@ const App: React.FC = () => {
     try {
       const parameters = await getDetailedParameters(recipe);
       setVault(prev => prev.map(r => r.id === newId ? { ...r, parameters } : r));
+      setViewingRecipe(prev => prev?.id === newId ? { ...prev, parameters } : prev);
     } catch (e) {
       console.warn("Failed to fetch parameters", e);
     }
@@ -422,7 +465,7 @@ const App: React.FC = () => {
       highEyes,
       isCigarEquipped,
       showChefHat,
-      bubbleColor: theme === 'crazy-bird' ? '#ef4444' : theme === 'chef-mode' ? '#fbbf24' : '#0ea5e9',
+      bubbleColor: theme === 'chef-mode' ? '#fbbf24' : '#0ea5e9',
       createdAt: new Date().toISOString(),
     };
     setPresets(prev => [...prev, newPreset]);
@@ -588,13 +631,56 @@ const App: React.FC = () => {
   };
 
   const filteredPlugins = useMemo(() => {
-    return plugins.filter(p => 
+    let filtered = plugins.filter(p => 
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.vendor.toLowerCase().includes(searchTerm.toLowerCase())
+      p.vendor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.type.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [plugins, searchTerm]);
 
-  const parsePlugins = (input: string) => {
+    if (selectedFolder) {
+      filtered = filtered.filter(p => 
+        sortBy === 'vendor' ? p.vendor === selectedFolder : p.type === selectedFolder
+      );
+    }
+
+    filtered.sort((a, b) => {
+      const aFav = starredPlugins.includes(a.name);
+      const bFav = starredPlugins.includes(b.name);
+      if (aFav && !bFav) return -1;
+      if (!aFav && bFav) return 1;
+
+      if (sortBy === 'vendor') {
+        return a.vendor.localeCompare(b.vendor) || a.name.localeCompare(b.name);
+      } else if (sortBy === 'type') {
+        return a.type.localeCompare(b.type) || a.name.localeCompare(b.name);
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    return filtered;
+  }, [plugins, searchTerm, sortBy, starredPlugins, selectedFolder]);
+
+  const groupedPlugins = useMemo(() => {
+    if (sortBy === 'name') return null;
+    
+    let filtered = plugins.filter(p => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.vendor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.type.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const groups: Record<string, VSTPlugin[]> = {};
+    filtered.forEach(p => {
+      const key = sortBy === 'vendor' ? p.vendor : p.type;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(p);
+    });
+
+    // Sort groups by key
+    return Object.fromEntries(Object.entries(groups).sort(([a], [b]) => a.localeCompare(b)));
+  }, [plugins, searchTerm, sortBy]);
+
+  const parsePlugins = async (input: string) => {
     if (!input.trim()) return;
     const lines = input.trim().split('\n');
     const isReaperIni = lines.some(l => l.includes('=') && (l.includes('.dll') || l.includes('.vst3')));
@@ -638,11 +724,37 @@ const App: React.FC = () => {
       setError("I couldn't find any plugins. Make sure you copied the list or uploaded the right file!");
       return;
     }
-    setPlugins(parsed);
+
     setError(null);
+    setIsEnrichingLibrary(true);
+    setEnrichProgress(0);
+    setEnrichEta(0);
+
+    try {
+      const enriched = await enrichPluginLibrary(parsed, (progress, eta) => {
+        setEnrichProgress(progress);
+        setEnrichEta(eta);
+      });
+      setPlugins(enriched);
+      setShowAnalogModal(true); // Only show the next screen if enrichment succeeds
+    } catch (err: any) {
+      console.error("Failed to enrich library:", err);
+      
+      let detailedError = "Failed to research your plugins. ";
+      if (err.message === "QUOTA_EXCEEDED") {
+        detailedError = "AI Research Quota Exceeded. I can't research your plugins right now because the AI is at its limit. Please try again in a few minutes or with a smaller list.";
+      } else {
+        detailedError += err.message || "An unexpected error occurred during the research process.";
+      }
+      
+      setError(detailedError);
+      setPlugins([]); // Don't allow proceeding with unresearched plugins
+    } finally {
+      setIsEnrichingLibrary(false);
+    }
   };
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     const fileName = file.name.toLowerCase();
     if (fileName.includes('reaper')) {
       setDawType('Reaper');
@@ -653,12 +765,11 @@ const App: React.FC = () => {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const content = event.target?.result as string;
       if (content) {
         setCsvInput(content);
-        parsePlugins(content);
-        setShowAnalogModal(true);
+        await parsePlugins(content);
       }
     };
     reader.onerror = () => {
@@ -696,8 +807,16 @@ const App: React.FC = () => {
     if (plugins.length === 0) return;
     setLoading(true);
     setError(null);
+    
+    // Safety timeout to prevent getting stuck
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("The architect is taking too long. Please try again!");
+    }, 45000);
+
     try {
-      const response = await getBeatRecommendations(plugins, analogInstruments, analogHardware, excludeAnalog, dawType);
+      const response = await getBeatRecommendations(plugins, analogInstruments, analogHardware, excludeAnalog, dawType, starredPlugins);
+      clearTimeout(timeoutId);
       setRecipes(response.recipes);
       const newHistory: HistoryItem[] = response.recipes.map(r => ({
         ...r,
@@ -705,6 +824,7 @@ const App: React.FC = () => {
       }));
       setHistory(prev => [...newHistory, ...prev].slice(0, 50));
     } catch (err) {
+      clearTimeout(timeoutId);
       setError("Couldn't think of any beats right now. Try again in a second!");
     } finally {
       setLoading(false);
@@ -715,15 +835,24 @@ const App: React.FC = () => {
     if (plugins.length === 0 || !typeBeatSearch.trim()) return;
     setLoading(true);
     setError(null);
+
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("Search timed out. Try a different vibe!");
+    }, 45000);
+
     try {
-      const response = await getCustomBeatRecommendations(plugins, typeBeatSearch.trim(), analogInstruments, analogHardware, excludeAnalog, dawType);
+      const response = await getCustomBeatRecommendations(plugins, typeBeatSearch.trim(), analogInstruments, analogHardware, excludeAnalog, dawType, starredPlugins);
+      clearTimeout(timeoutId);
       setRecipes(response.recipes);
       const newHistory: HistoryItem[] = response.recipes.map(r => ({
         ...r,
         generatedAt: new Date().toISOString()
       }));
       setHistory(prev => [...newHistory, ...prev].slice(0, 50));
+      setTypeBeatSearch('');
     } catch (err) {
+      clearTimeout(timeoutId);
       setError("Couldn't find any recipes for that vibe. Try a different search!");
     } finally {
       setLoading(false);
@@ -734,15 +863,24 @@ const App: React.FC = () => {
     if (plugins.length === 0 || !songSearch.trim()) return;
     setLoading(true);
     setError(null);
+
+    const timeoutId = setTimeout(() => {
+      setLoading(false);
+      setError("Song search timed out. Try a different track!");
+    }, 45000);
+
     try {
-      const response = await getSongBeatRecommendations(plugins, songSearch.trim(), analogInstruments, analogHardware, excludeAnalog, dawType);
+      const response = await getSongBeatRecommendations(plugins, songSearch.trim(), analogInstruments, analogHardware, excludeAnalog, dawType, starredPlugins);
+      clearTimeout(timeoutId);
       setRecipes(response.recipes);
       const newHistory: HistoryItem[] = response.recipes.map(r => ({
         ...r,
         generatedAt: new Date().toISOString()
       }));
       setHistory(prev => [...newHistory, ...prev].slice(0, 50));
+      setSongSearch('');
     } catch (err) {
+      clearTimeout(timeoutId);
       setError("Couldn't find any recipes for that song. Try a different track!");
     } finally {
       setLoading(false);
@@ -821,11 +959,23 @@ const App: React.FC = () => {
       {theme === 'coldest' && <SnowFlurry />}
       <div className={`h-8 flex items-center justify-between px-3 text-[11px] font-bold select-none backdrop-blur-md border-b transition-all duration-500 z-[100] ${theme === 'coldest' ? 'bg-white/30 text-[#0c4a6e] border-white/20' : 'bg-black/40 text-red-100 border-red-900/30'}`}>
         <div className="flex items-center gap-2 relative">
+          <button
+            onClick={() => {
+              setRecipes([]);
+              setCsvInput('');
+              setError(null);
+            }}
+            className="flex items-center justify-center w-5 h-5 rounded-full hover:bg-white/20 transition-all opacity-70 hover:opacity-100"
+            title="Go Home"
+          >
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          </button>
           <button 
             onClick={() => setShowBrandMenu(!showBrandMenu)}
             className="flex items-center gap-2 hover:opacity-70 transition-all group"
           >
-            <div className={`w-3 h-3 rounded-full shadow-inner ${theme === 'coldest' ? 'bg-sky-400' : 'bg-red-600'}`} />
             <span className="tracking-wide uppercase whitespace-nowrap">{currentAppName} x ColdestConcept</span>
             <svg className={`w-2.5 h-2.5 transition-transform duration-300 ${showBrandMenu ? 'rotate-180' : ''} opacity-30 group-hover:opacity-100`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
@@ -839,18 +989,58 @@ const App: React.FC = () => {
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteAllData();
+                    setShowTrashModal(true);
+                    setShowBrandMenu(false);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-red-500/10 text-red-500 transition-colors group"
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors group ${theme === 'coldest' ? 'hover:bg-slate-100 text-slate-700' : 'hover:bg-white/10 text-slate-300'}`}
                 >
-                  <div className="w-7 h-7 rounded-full bg-red-500/10 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-colors">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${theme === 'coldest' ? 'bg-slate-100 group-hover:bg-slate-200' : 'bg-white/10 group-hover:bg-white/20'}`}>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </div>
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wider">Show Deleted Items</div>
+                    <div className="text-[9px] opacity-50 mt-0.5">Restore plugins and hardware</div>
+                  </div>
+                </button>
+                <div className={`h-px w-full my-1 ${theme === 'coldest' ? 'bg-slate-100' : 'bg-white/10'}`} />
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPlugins([]);
+                    setCsvInput('');
+                    setError(null);
+                    setShowBrandMenu(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors group ${theme === 'coldest' ? 'hover:bg-slate-100 text-slate-700' : 'hover:bg-white/10 text-slate-300'}`}
+                >
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${theme === 'coldest' ? 'bg-slate-100 group-hover:bg-slate-200' : 'bg-white/10 group-hover:bg-white/20'}`}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold uppercase tracking-wider">Update Plugin List</div>
+                    <div className="text-[9px] opacity-50 mt-0.5">Upload a new plugin file</div>
+                  </div>
+                </button>
+                <div className={`h-px w-full my-1 ${theme === 'coldest' ? 'bg-slate-100' : 'bg-white/10'}`} />
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteAllData();
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors group ${theme === 'coldest' ? 'hover:bg-slate-100 text-black' : 'hover:bg-white/10 text-white'}`}
+                >
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${theme === 'coldest' ? 'bg-black text-white' : 'bg-white text-black'}`}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
                   <div className="flex flex-col">
                     <span className="text-[10px] font-black uppercase tracking-wider">Delete Browser Data</span>
-                    <span className="text-[8px] font-bold opacity-50">Reset all progress & saves</span>
+                    <span className="text-[8px] font-bold opacity-50">Removes plugins, instruments, presets & recipes</span>
                   </div>
                 </button>
                 
@@ -930,19 +1120,36 @@ const App: React.FC = () => {
           onImportRig={handleImportRig}
           allPlugins={plugins}
           userName={user?.name || "BeatGenius Producer"}
-          onOpen={(r) => {
+          onOpen={async (r) => {
             if (r.linkedPresetId) {
               const linked = presets.find(p => p.id === r.linkedPresetId);
               if (linked) applyPreset(linked);
             }
-            setViewingRecipe(r);
+
+            // If parameters are missing, fetch them now.
+            if (!r.parameters) {
+              setViewingRecipe(r); // Show modal with loading state immediately
+              try {
+                const parameters = await getDetailedParameters(r);
+                // Update the recipe in the main vault state
+                setVault(prev => prev.map(recipe => recipe.id === r.id ? { ...recipe, parameters } : recipe));
+                // Update the recipe currently being viewed to re-render the modal
+                setViewingRecipe(prev => prev && prev.id === r.id ? { ...prev, parameters } : prev);
+              } catch (e) {
+                console.warn("Failed to fetch parameters on open", e);
+                // TODO: Optionally show an error to the user in the modal
+              }
+            } else {
+              // Parameters already exist, just show the recipe
+              setViewingRecipe(r);
+            }
           }}
         />
       )}
 
       {viewingRecipe && (
         <RecipeViewerModal 
-          recipe={viewingRecipe} 
+          recipe={vault.find(r => r.id === viewingRecipe.id) || viewingRecipe} 
           onClose={() => setViewingRecipe(null)}
           presets={presets}
           onLinkPreset={(pid) => updateRecipeLinkedPreset(viewingRecipe.id, pid)}
@@ -1213,7 +1420,7 @@ const App: React.FC = () => {
 
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[100] flex flex-col">
         {isSecretUnlocked && (
-          <div className={`px-4 py-3 flex gap-2 overflow-x-auto no-scrollbar items-center border-t ${mainBlurClass} animate-in slide-in-from-bottom-full duration-500 ${theme === 'coldest' ? 'bg-white/60 border-slate-200' : theme === 'chef-mode' ? 'bg-white/40 border-orange-200' : 'bg-black/80 border-red-900/30'}`}>
+          <div className={`px-4 py-3 flex gap-4 overflow-x-auto no-scrollbar items-center border-t ${mainBlurClass} animate-in slide-in-from-bottom-full duration-500 ${theme === 'coldest' ? 'bg-white/60 border-slate-200' : theme === 'chef-mode' ? 'bg-white/40 border-orange-200' : 'bg-black/80 border-red-900/30'}`}>
             {isSecretUnlocked && grillStyle === 'aquabberry-diamond' && (
               <button 
                 onClick={() => setDuragStyle(prev => prev === 'standard' ? 'royal-green' : 'standard')} 
@@ -1251,12 +1458,7 @@ const App: React.FC = () => {
           <div className="flex items-stretch justify-around h-20 px-4">
             <button onClick={cycleGrill} className={mobileToolbarBtnClasses}><span className="text-xl">💎</span><span className="text-[9px] font-black uppercase truncate max-w-[80px]">{grillLabel}</span></button>
             <button onClick={cycleKnife} className={mobileToolbarBtnClasses}><span className="text-xl">🔪</span><span className="text-[9px] font-black uppercase truncate max-w-[80px]">{knifeLabel}</span></button>
-            <button onClick={toggleTheme} className={mobileToolbarBtnClasses}>
-              <span className="text-xl flex items-center justify-center">
-                {theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? <CrazyBirdIcon className="w-6 h-6" /> : '💰'}
-              </span>
-              <span className="text-[9px] font-black uppercase truncate max-w-[80px]">{theme === 'chef-mode' ? 'Chef' : 'Theme'}</span>
-            </button>
+            <button onClick={toggleTheme} className={mobileToolbarBtnClasses}><span className="text-xl">{theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? '🐦' : '💰'}</span><span className="text-[9px] font-black uppercase truncate max-w-[80px]">{theme === 'chef-mode' ? 'Chef' : 'Theme'}</span></button>
             <button onClick={() => setShowVault(true)} className={mobileToolbarBtnClasses}><span className="text-xl">📁</span><span className="text-[9px] font-black uppercase">Vault</span></button>
           </div>
         </div>
@@ -1276,7 +1478,34 @@ const App: React.FC = () => {
         </div>
 
         {error && <div className="mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-2xl text-red-400 text-sm font-bold text-center">{error}</div>}
-        {plugins.length === 0 ? (
+        
+        {isEnrichingLibrary ? (
+          <div className="max-w-3xl mx-auto mt-16 sm:mt-12 animate-in fade-in zoom-in duration-1000">
+            <div className={`p-8 sm:p-16 transition-all ${mainBlurClass} border rounded-[3rem] sm:rounded-[4rem] shadow-2xl flex flex-col items-center text-center ${theme === 'coldest' ? 'bg-white/30 border-white/40' : theme === 'chef-mode' ? 'bg-white/40 border-white/40' : 'bg-black/40 border-white/10'}`}>
+              <Logo size={160} grillStyle={grillStyle} knifeStyle={knifeStyle} duragStyle={duragStyle} pendantStyle={pendantStyle} chainStyle={chainStyle} theme={theme} saberColor={saberColor} showChain={showChain} highEyes={highEyes} isCigarEquipped={isCigarEquipped} isTossingCigar={isTossingCigar} showChefHat={showChefHat} showSparkles={showSparkles} onClick={cycleGrill} />
+              
+              <h2 className={`text-3xl sm:text-4xl font-black tracking-tighter mt-8 mb-4 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-800' : 'text-white'}`}>
+                Building Your Library...
+              </h2>
+              
+              <p className={`text-sm font-bold mb-8 max-w-md ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-600' : 'text-slate-400'}`}>
+                We're researching your unique plugins to find out what makes them special. This is a lot of work, but we'll automatically save your library so you won't have to do this again until you get new plugins!
+              </p>
+
+              <div className="w-full max-w-md bg-black/10 rounded-full h-4 mb-4 overflow-hidden relative">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ease-out ${theme === 'coldest' ? 'bg-sky-500' : theme === 'chef-mode' ? 'bg-orange-500' : 'bg-white'}`}
+                  style={{ width: `${enrichProgress}%` }}
+                />
+              </div>
+              
+              <div className="flex justify-between w-full max-w-md text-xs font-black uppercase tracking-widest opacity-60">
+                <span>{enrichProgress}% Complete</span>
+                <span>~{enrichEta}s remaining</span>
+              </div>
+            </div>
+          </div>
+        ) : plugins.length === 0 && !isEnrichingLibrary ? (
           <div className="max-w-3xl mx-auto mt-16 sm:mt-12 animate-in fade-in zoom-in duration-1000">
             <div className={`p-6 sm:p-12 transition-all ${mainBlurClass} border rounded-[3rem] sm:rounded-[4rem] shadow-2xl ${theme === 'coldest' ? 'bg-white/30 border-white/40' : theme === 'chef-mode' ? 'bg-white/40 border-white/40' : 'bg-black/40 border-white/10'}`}>
               <div className="flex flex-col items-center mb-10 text-center">
@@ -1287,16 +1516,21 @@ const App: React.FC = () => {
               </div>
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
+                onDragOver={(e) => {
+                  if (window.innerWidth >= 640) handleDragOver(e);
+                }}
+                onDragLeave={(e) => {
+                  if (window.innerWidth >= 640) handleDragLeave(e);
+                }}
+                onDrop={(e) => {
+                  if (window.innerWidth >= 640) handleDrop(e);
+                }}
                 className={`w-full h-80 p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-500 outline-none ${mainBlurClass} border shadow-inner rounded-[2rem] sm:rounded-[3rem] ${isDragging ? 'scale-[1.02] border-sky-500 bg-sky-500/10' : ''} ${theme === 'coldest' ? 'bg-white/40 border-white text-slate-800 hover:bg-white/60' : theme === 'chef-mode' ? 'bg-white/60 border-white text-slate-900 hover:bg-white/80' : 'bg-black/60 border-white/10 text-white hover:bg-black/80'}`}
               >
-                <div className="text-4xl mb-4 opacity-50 flex items-center justify-center">
-                  {theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? <CrazyBirdIcon className="w-10 h-10" /> : '💰'}
-                </div>
-                <p className="text-lg font-black tracking-tight mb-2">Drag & Drop your plugin file here</p>
-                <p className="text-sm font-bold opacity-60 mb-6">or click to browse</p>
+                <div className="text-4xl mb-4 opacity-50">{theme === 'coldest' ? '❄️' : theme === 'chef-mode' ? '👨‍🍳' : theme === 'crazy-bird' ? '🐦' : '💰'}</div>
+                <p className="hidden sm:block text-lg font-black tracking-tight mb-2">Drag & Drop your plugin file here</p>
+                <p className="hidden sm:block text-sm font-bold opacity-60 mb-6">or click to browse</p>
+                <p className="sm:hidden text-lg font-black tracking-tight mb-6">Tap to upload your plugin file</p>
                 <p className="text-xs font-bold opacity-40 uppercase tracking-widest">Click the Help button below to find your file</p>
               </div>
               <div className="flex flex-wrap justify-center gap-3 mt-6">
@@ -1310,7 +1544,7 @@ const App: React.FC = () => {
               <input type="file" ref={fileInputRef} className="hidden" accept=".csv,.txt,.ini" onChange={handleFileUpload} />
             </div>
           </div>
-        ) : (
+        ) : !isEnrichingLibrary && plugins.length > 0 ? (
           <div className="space-y-12 mt-12 sm:mt-0">
             <section className={`flex flex-col gap-8 p-6 sm:p-10 transition-all ${mainBlurClass} border rounded-[3rem] sm:rounded-[4rem] shadow-xl ${theme === 'coldest' ? 'bg-white/20 border-white/30' : theme === 'chef-mode' ? 'bg-white/40 border-white/30' : 'bg-black/40 border-white/10'}`}>
               <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
@@ -1382,7 +1616,7 @@ const App: React.FC = () => {
               </div>
 
               {(analogInstruments.length > 0 || analogHardware.length > 0) && (
-                <div className="flex items-center justify-center gap-3 mt-2">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4 sm:mt-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input 
                       type="checkbox" 
@@ -1403,6 +1637,7 @@ const App: React.FC = () => {
                 </div>
               )}
             </section>
+
             {recipes.length > 0 && (
               <section className="grid grid-cols-1 gap-6 animate-in fade-in slide-in-from-bottom-12 duration-1000">
                 {recipes.map((recipe, idx) => (
@@ -1410,12 +1645,325 @@ const App: React.FC = () => {
                 ))}
               </section>
             )}
-            <section className="space-y-8">
-              <div className="flex items-center justify-between border-b pb-8 border-current opacity-20"><h3 className="text-2xl font-black select-none">Gear Rack</h3><input type="text" placeholder="Search the rack..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className={`py-4 px-8 text-sm font-bold focus:outline-none transition-all w-96 rounded-full ${theme === 'coldest' ? 'bg-white/40 border-white text-slate-800' : theme === 'chef-mode' ? 'bg-white/60 border-white text-slate-900' : 'bg-black/60 border-white/10 text-white'}`} /></div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">{filteredPlugins.map((plugin, idx) => <PluginCard key={idx} plugin={plugin} />)}</div>
+            <section className={`p-6 sm:p-10 transition-all ${mainBlurClass} border rounded-[3rem] sm:rounded-[4rem] shadow-xl mb-16 ${theme === 'coldest' ? 'bg-white/20 border-white/30' : theme === 'chef-mode' ? 'bg-white/40 border-white/30' : 'bg-black/40 border-white/10'}`}>
+              <div className="flex flex-col gap-4 pb-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    {selectedFolder && (
+                      <button 
+                        onClick={() => setSelectedFolder(null)}
+                        className={`p-2 rounded-full transition-all hover:scale-105 active:scale-95 ${theme === 'coldest' ? 'bg-sky-100 text-sky-800 hover:bg-sky-200' : theme === 'chef-mode' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                    )}
+                    <h3 className={`text-2xl font-black select-none ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-800' : 'text-white'}`}>
+                      {selectedFolder ? selectedFolder : 'Gear Rack'}
+                    </h3>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    <select 
+                      value={sortBy} 
+                      onChange={(e) => { setSortBy(e.target.value as any); setSelectedFolder(null); }}
+                      className={`py-2 px-4 rounded-full text-xs font-bold focus:outline-none transition-all ${theme === 'coldest' ? 'bg-white/40 text-slate-800' : theme === 'chef-mode' ? 'bg-white/60 text-slate-900' : 'bg-black/60 text-white'}`}
+                    >
+                      <option value="type">Group by Type</option>
+                      <option value="vendor">Group by Brand</option>
+                      <option value="name">Display All</option>
+                    </select>
+                    <input 
+                      type="text" 
+                      placeholder="Search the rack..." 
+                      value={searchTerm} 
+                      onChange={(e) => setSearchTerm(e.target.value)} 
+                      className={`py-4 px-8 text-sm font-bold focus:outline-none transition-all w-64 sm:w-96 rounded-full ${theme === 'coldest' ? 'bg-white/40 border-white text-slate-800' : theme === 'chef-mode' ? 'bg-white/60 border-white text-slate-900' : 'bg-black/60 border-white/10 text-white'}`} 
+                    />
+                  </div>
+                </div>
+                
+                {/* Starred Items Bar */}
+                {pluginToUnstar && (
+                  <div className="fixed inset-0 z-[500] flex items-center justify-center p-6 bg-black/80 backdrop-blur-2xl animate-in fade-in zoom-in duration-300">
+                    <div className={`w-full max-w-sm p-8 sm:p-10 rounded-[3rem] border shadow-2xl text-center ${theme === 'coldest' ? 'bg-white border-slate-200' : 'bg-[#0a0a0a] text-white border-white/10'}`}>
+                      <h2 className="text-2xl font-black tracking-tighter mb-2">Remove Starred Plugin?</h2>
+                      <p className="text-sm font-bold opacity-60 mb-8">Are you sure you want to un-star <span className="font-extrabold">{pluginToUnstar}</span>?</p>
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => setPluginToUnstar(null)}
+                          className={`flex-1 py-4 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${theme === 'coldest' ? 'bg-slate-100 text-slate-600' : 'bg-white/5 text-white/60'}`}
+                        >
+                          Keep Starred
+                        </button>
+                        <button 
+                          onClick={confirmUnstar}
+                          className="flex-1 bg-red-500 text-white font-black py-4 rounded-full shadow-lg active:scale-95 transition-all uppercase text-[10px] tracking-widest"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {starredPlugins.length > 0 && (
+                  <div className="flex items-center gap-3 overflow-x-auto pt-4 pb-2 scrollbar-hide -mt-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-50 shrink-0">Starred ({starredPlugins.length + starredHardware.length}/20):</span>
+                    {[...starredPlugins, ...starredHardware].map((name, index) => {
+                      const themeStyles = {
+                        coldest: {
+                          border: 'border-sky-400/50',
+                          shades: [
+                            'bg-sky-100/50 text-sky-700', 'bg-sky-200/50 text-sky-800',
+                            'bg-sky-300/50 text-sky-900', 'bg-sky-400/50 text-sky-950',
+                            'bg-sky-500/50 text-sky-950'
+                          ]
+                        },
+                        'chef-mode': {
+                          border: 'border-orange-400/50',
+                          shades: [
+                            'bg-orange-100/50 text-orange-700', 'bg-orange-200/50 text-orange-800',
+                            'bg-orange-300/50 text-orange-900', 'bg-orange-400/50 text-orange-950',
+                            'bg-orange-500/50 text-orange-950'
+                          ]
+                        },
+                        'crazy-bird': {
+                          border: 'border-red-500/50',
+                          shades: [
+                            'bg-red-200/20 text-red-100', 'bg-red-300/20 text-red-100',
+                            'bg-red-400/20 text-red-50', 'bg-red-500/20 text-red-50',
+                            'bg-red-600/20 text-red-50'
+                          ]
+                        },
+                        'hustle-time': {
+                          border: 'border-emerald-500/50',
+                          shades: [
+                            'bg-emerald-200/20 text-emerald-100', 'bg-emerald-300/20 text-emerald-100',
+                            'bg-emerald-400/20 text-emerald-50', 'bg-emerald-500/20 text-emerald-50',
+                            'bg-emerald-600/20 text-emerald-50'
+                          ]
+                        }
+                      };
+                      const styles = (themeStyles[theme as keyof typeof themeStyles] || themeStyles['hustle-time']);
+                      const colorClass = styles.shades[index % styles.shades.length];
+                      const borderClass = styles.border;
+
+                      return (
+                        <div key={name} className="relative group shrink-0">
+                          <button
+                            onClick={() => {
+                              setSearchTerm(name);
+                              setTimeout(() => setSearchTerm(''), 3000);
+                            }}
+                            className={`flex items-center gap-1.5 text-sm font-bold px-5 py-1.5 rounded-full whitespace-nowrap transition-all hover:scale-105 active:scale-95 border ${borderClass} ${colorClass}`}>
+                            <Star size={12} className="fill-current" />
+                            {name}
+                          </button>
+                          <button
+                            onClick={() => {
+                            if (plugins.some(p => p.name === name)) {
+                              toggleStar(name);
+                            } else {
+                              setStarredHardware(prev => prev.filter(n => n !== name));
+                            }
+                          }}
+                            className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 active:scale-95 shadow-lg border-2 border-white/50"
+                            title={`Remove ${name}`}>
+                            <X size={10} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+              
+              {/* Analog Equipment Section */}
+              {!selectedFolder && !searchTerm && (analogInstruments.length > 0 || analogHardware.length > 0) && (
+                <div className="mb-12">
+                  <h4 className={`text-sm font-black uppercase tracking-widest mb-6 opacity-70 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-800' : 'text-white'}`}>Real Instruments & Hardware</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    {[...analogInstruments, ...analogHardware].map((item, idx) => (
+                      <HardwareCard 
+                        key={`hw-${idx}`}
+                        item={item}
+                        theme={theme}
+                        isFavorite={starredHardware.includes(item.name)}
+                        onToggleFavorite={(itemName) => {
+                          setStarredHardware(prev => 
+                            prev.includes(itemName) 
+                              ? prev.filter(n => n !== itemName) 
+                              : [...prev, itemName]
+                          );
+                        }}
+                        onRemove={(itemToRemove) => {
+                          if (itemToRemove.type === 'instrument') {
+                            setAnalogInstruments(prev => prev.filter(i => i.name !== itemToRemove.name));
+                            setDeletedInstruments(prev => [...prev, itemToRemove]);
+                          } else {
+                            setAnalogHardware(prev => prev.filter(h => h.name !== itemToRemove.name));
+                            setDeletedHardware(prev => [...prev, itemToRemove]);
+                          }
+                          setStarredHardware(prev => prev.filter(n => n !== itemToRemove.name));
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-12">
+                <h4 className={`text-sm font-black uppercase tracking-widest mb-6 opacity-70 ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-800' : 'text-white'}`}>Plugins</h4>
+                {groupedPlugins && !selectedFolder ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    {(() => {
+                      const items: any[] = Object.entries(groupedPlugins).map(([groupName, groupPlugins]) => ({ type: 'folder', name: groupName, plugins: groupPlugins }));
+                    const placeholders = pendingPlaceholders.filter(p => p.type === 'folder').sort((a, b) => a.index - b.index);
+                    placeholders.forEach(p => {
+                      items.splice(p.index, 0, { type: 'folder', name: p.name, plugins: p.plugins, isPlaceholder: true, placeholderId: p.id });
+                    });
+                    
+                    return items.map((item, idx) => {
+                      if (item.isPlaceholder) {
+                        return (
+                          <div key={`placeholder-${item.placeholderId}`} className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border border-dashed transition-all ${theme === 'coldest' ? 'border-sky-300 bg-sky-50' : theme === 'chef-mode' ? 'border-orange-300 bg-orange-50' : 'border-white/20 bg-white/5'} h-full min-h-[12rem]`}>
+                            <p className={`text-xs font-bold opacity-50 mb-4 text-center ${theme === 'coldest' ? 'text-sky-800' : theme === 'chef-mode' ? 'text-orange-800' : 'text-white'}`}>Removed {item.name}</p>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleUndo(item.placeholderId); }}
+                              className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all ${theme === 'coldest' ? 'bg-sky-500 text-white' : theme === 'chef-mode' ? 'bg-orange-500 text-white' : 'bg-white text-black'}`}
+                            >
+                              Undo
+                            </button>
+                          </div>
+                        );
+                      }
+                      
+                      const groupName = item.name;
+                      const groupPlugins = item.plugins;
+                      return (
+                        <div 
+                          key={groupName}
+                          onClick={() => setSelectedFolder(groupName)}
+                          className={`cursor-pointer group relative flex flex-col items-center justify-center p-6 rounded-[2rem] border transition-all hover:scale-105 active:scale-95 shadow-sm hover:shadow-xl ${theme === 'coldest' ? 'bg-white/60 border-sky-100 hover:bg-white/80' : theme === 'chef-mode' ? 'bg-white/60 border-orange-100 hover:bg-white/80' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                        >
+                          {/* Top Actions */}
+                          <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setFolderToRemove(groupName); }}
+                              className="p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-600 backdrop-blur-md transition-all"
+                              title={`Remove ${sortBy === 'vendor' ? 'Brand' : 'Type'}`}
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+
+                          {/* Confirmation Popup */}
+                          {folderToRemove === groupName && (
+                            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/80 backdrop-blur-md rounded-[2rem] p-4 animate-in fade-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+                              <div className="text-center">
+                                <p className="text-white text-xs font-bold mb-3">Remove all {groupName}?</p>
+                                <div className="flex justify-center gap-2">
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); setFolderToRemove(null); }}
+                                    className="px-3 py-1.5 rounded-full bg-white/20 text-white text-[10px] font-bold hover:bg-white/30 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const pluginsInFolder = plugins.filter(p => (sortBy === 'vendor' ? p.vendor : p.type) === groupName);
+                                      const folderIndex = Object.keys(groupedPlugins).indexOf(groupName);
+                                      
+                                      setPlugins(prev => prev.filter(p => (sortBy === 'vendor' ? p.vendor : p.type) !== groupName));
+                                      setDeletedPlugins(prev => [...prev, ...pluginsInFolder]);
+                                      setStarredPlugins(prev => {
+                                        const names = pluginsInFolder.map(p => p.name);
+                                        return prev.filter(name => !names.includes(name));
+                                      });
+                                      
+                                      setPendingPlaceholders(prev => [
+                                        ...prev, 
+                                        { id: Date.now().toString() + Math.random(), type: 'folder', name: groupName, index: folderIndex, plugins: pluginsInFolder }
+                                      ]);
+                                      resetDeletionTimer();
+                                      setFolderToRemove(null);
+                                    }}
+                                    className="px-3 py-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold hover:bg-red-600 transition-colors"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className={`w-16 h-16 mb-4 rounded-2xl flex items-center justify-center shadow-inner ${theme === 'coldest' ? 'bg-sky-100 text-sky-600' : theme === 'chef-mode' ? 'bg-orange-100 text-orange-600' : 'bg-black/40 text-white'}`}>
+                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                            </svg>
+                          </div>
+                          <h4 className="text-sm font-black text-center truncate w-full px-2">{groupName}</h4>
+                          <span className="text-[10px] font-bold opacity-50 mt-1 uppercase tracking-widest">{groupPlugins.length} items</span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                  {(() => {
+                    const items: any[] = filteredPlugins.map(p => ({ type: 'plugin', plugin: p }));
+                    const placeholders = pendingPlaceholders.filter(p => p.type === 'plugin').sort((a, b) => a.index - b.index);
+                    placeholders.forEach(p => {
+                      items.splice(p.index, 0, { type: 'plugin', plugin: p.plugins[0], isPlaceholder: true, placeholderId: p.id });
+                    });
+
+                    return items.map((item, idx) => {
+                      if (item.isPlaceholder) {
+                        return (
+                          <div key={`placeholder-${item.placeholderId}`} className={`flex flex-col items-center justify-center p-6 rounded-[2rem] border border-dashed transition-all ${theme === 'coldest' ? 'border-sky-300 bg-sky-50' : theme === 'chef-mode' ? 'border-orange-300 bg-orange-50' : 'border-white/20 bg-white/5'} h-full min-h-[12rem]`}>
+                            <p className={`text-xs font-bold opacity-50 mb-4 text-center ${theme === 'coldest' ? 'text-sky-800' : theme === 'chef-mode' ? 'text-orange-800' : 'text-white'}`}>Removed {item.plugin.name}</p>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleUndo(item.placeholderId); }}
+                              className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all ${theme === 'coldest' ? 'bg-sky-500 text-white' : theme === 'chef-mode' ? 'bg-orange-500 text-white' : 'bg-white text-black'}`}
+                            >
+                              Undo
+                            </button>
+                          </div>
+                        );
+                      }
+
+                      const plugin = item.plugin;
+                      return (
+                        <PluginCard 
+                          key={`${plugin.vendor}-${plugin.name}-${idx}`} 
+                          plugin={plugin} 
+                          isFavorite={starredPlugins.includes(plugin.name)}
+                          onToggleFavorite={(p) => toggleStar(p.name)}
+                          onRemove={(p) => {
+                            const pluginIndex = filteredPlugins.findIndex(pl => pl.name === p.name && pl.vendor === p.vendor);
+                            setPlugins(prev => prev.filter(pl => pl.name !== p.name || pl.vendor !== p.vendor));
+                            setDeletedPlugins(prev => [...prev, p]);
+                            setStarredPlugins(prev => prev.filter(n => n !== p.name));
+                            
+                            setPendingPlaceholders(prev => [
+                              ...prev, 
+                              { id: Date.now().toString() + Math.random(), type: 'plugin', index: pluginIndex, plugins: [p] }
+                            ]);
+                            resetDeletionTimer();
+                          }}
+                        />
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+              </div>
             </section>
           </div>
-        )}
+        ) : null}
       </main>
       <footer className="py-16 text-center opacity-40 select-none"><p className="text-[10px] font-black uppercase tracking-[0.8em]">{currentAppName} x ColdestConcept / 2026</p></footer>
       
@@ -1423,10 +1971,44 @@ const App: React.FC = () => {
         isOpen={showAnalogModal} 
         onClose={() => setShowAnalogModal(false)} 
         theme={theme}
-        onSave={(instruments, hardware) => {
-          setAnalogInstruments(instruments);
-          setAnalogHardware(hardware);
+        onSave={async (instrumentNames, hardwareNames) => {
+          const newInstruments = await enrichHardware(instrumentNames);
+          const newHardware = await enrichHardware(hardwareNames);
+
+          const removedInstruments = analogInstruments.filter(i => !newInstruments.some(ni => ni.name === i.name));
+          const removedHardware = analogHardware.filter(h => !newHardware.some(nh => nh.name === h.name));
+
+          setDeletedInstruments(prev => [...prev, ...removedInstruments]);
+          setDeletedHardware(prev => [...prev, ...removedHardware]);
+
+          setAnalogInstruments(newInstruments);
+          setAnalogHardware(newHardware);
         }}
+      />
+      <TrashModal
+        isOpen={showTrashModal}
+        onClose={() => setShowTrashModal(false)}
+        deletedPlugins={deletedPlugins}
+        deletedInstruments={deletedInstruments}
+        deletedHardware={deletedHardware}
+        onRestorePlugin={(plugin) => {
+          setDeletedPlugins(prev => prev.filter(p => p.name !== plugin.name || p.vendor !== plugin.vendor));
+          setPlugins(prev => [...prev, plugin]);
+        }}
+        onRestoreInstrument={(inst) => {
+          setDeletedInstruments(prev => prev.filter(i => i !== inst));
+          setAnalogInstruments(prev => [...prev, inst]);
+        }}
+        onRestoreHardware={(hw) => {
+          setDeletedHardware(prev => prev.filter(h => h !== hw));
+          setAnalogHardware(prev => [...prev, hw]);
+        }}
+        onEmptyTrash={() => {
+          setDeletedPlugins([]);
+          setDeletedInstruments([]);
+          setDeletedHardware([]);
+        }}
+        theme={theme}
       />
     </div>
   );

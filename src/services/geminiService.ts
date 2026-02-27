@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { VSTPlugin, RecommendationResponse, BeatRecipe, RecipeParameters, SavedRecipe } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export const categorizeAndCompareLibraries = async (senderPlugins: VSTPlugin[], myPlugins: VSTPlugin[]) => {
   const senderStr = senderPlugins.map(p => `${p.vendor} - ${p.name}`).join('\n');
@@ -50,12 +50,164 @@ export const categorizeAndCompareLibraries = async (senderPlugins: VSTPlugin[], 
   return JSON.parse(response.text || '{"categories": []}');
 };
 
-export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null): Promise<RecommendationResponse> => {
+const ANALOG_DESCRIPTIONS: Record<string, string> = {
+  'Fender Jazzmaster': 'Bright, chimy, and percussive "surf" tone.',
+  'Fender Stratocaster': 'Glassy, quacky, and transparent bright tone.',
+  'ESP EX-50 (LTD)': 'Heavy, dense, fat, and full sound with humbucker pickups.',
+  'Fender Precision Bass': 'Characteristic punchy "galloping" style and mid-range growl.',
+  'Alhambra 7FC': 'Bright, aggressive flamenco attack.',
+  'Yamaha C40': 'Warm, mellow nylon string tone.',
+  'Korg Minilogue XD': 'Modern polyphonic analog warmth with digital multi-engine grit.',
+  'Behringer TD-3': 'Classic squelchy 303 acid bass lines.',
+  'UNO Synth': 'Aggressive, raw analog monophonic leads.',
+  'Shure SM57': 'Industry standard dynamic mic, great for aggressive vocals or snare drums.',
+  'Electro-Harmonix Big Muff': 'Iconic thick, creamy fuzz for guitars or synths.',
+  'Orange Micro Dark': 'High-gain, aggressive tube-hybrid tone.',
+  'Ampeg V-4B': 'Classic all-tube bass grit and punch.',
+  'Heritage Audio 73 JR II': 'Classic 1073-style preamp warmth and saturation.',
+  'Warm Audio WA76-D': 'Fast, aggressive FET compression.'
+};
+
+const generateAnalogStr = (analogInstruments: string[], analogHardware: string[]): string => {
+  if (analogInstruments.length === 0 && analogHardware.length === 0) {
+    return '';
+  }
+
+  const selectedDescriptions: string[] = [];
+  
+  analogInstruments.forEach(instrument => {
+    if (ANALOG_DESCRIPTIONS[instrument]) {
+      selectedDescriptions.push(`- ${instrument}: ${ANALOG_DESCRIPTIONS[instrument]}`);
+    }
+  });
+
+  analogHardware.forEach(hardware => {
+    if (ANALOG_DESCRIPTIONS[hardware]) {
+      selectedDescriptions.push(`- ${hardware}: ${ANALOG_DESCRIPTIONS[hardware]}`);
+    }
+  });
+
+  if (selectedDescriptions.length === 0) {
+    return `\nThe user has the following analog equipment, but no specific sonic characteristics were provided:\nInstruments: ${analogInstruments.join(', ')}\nHardware: ${analogHardware.join(', ')}`;
+  }
+
+  return `\nThe user also owns the following real analog equipment:\nInstruments: ${analogInstruments.join(', ')}\nHardware: ${analogHardware.join(', ')}\n\nIMPORTANT SONIC CHARACTERISTICS FOR ANALOG GEAR:\n${selectedDescriptions.join('\n')}\n\nPlease incorporate these real analog instruments and hardware into the beat recipes where appropriate, alongside the VST plugins. Use their specific sonic identities to inform the 'sourceSoundGoal' and 'loopGuide'.`;
+};
+
+export const enrichPluginLibrary = async (
+  plugins: VSTPlugin[],
+  onProgress: (progress: number, estimatedTimeLeft: number) => void
+): Promise<VSTPlugin[]> => {
+  let processedCount = 0;
+  const startTime = Date.now();
+
+  const updateProgress = () => {
+    processedCount++;
+    const progress = Math.round((processedCount / plugins.length) * 100);
+    const elapsedTime = Date.now() - startTime;
+    const timePerPlugin = elapsedTime / processedCount;
+    const remainingPlugins = plugins.length - processedCount;
+    const estimatedTimeLeft = Math.round((remainingPlugins * timePerPlugin) / 1000);
+    onProgress(progress, estimatedTimeLeft);
+  };
+
+  const processPlugin = async (plugin: VSTPlugin): Promise<VSTPlugin> => {
+    const doEnrichment = async (searchQuery: string) => {
+      const prompt = `
+        You are a VST plugin expert. For the plugin "${searchQuery}", provide a JSON object with the following information. 
+        Use the googleSearch tool to find accurate, version-specific details if possible.
+
+        - description: A short, engaging summary (1-2 sentences). If the version is old, do not mention features from newer versions.
+        - features: An array of 2-3 unique features of this version.
+        - category: ONE of the following: 'Instruments', 'Dynamics', 'Equalizers', 'Reverb & Delay', 'Modulation', 'Distortion & Saturation', 'Utility & Metering', 'Creative FX'.
+
+        If you cannot find reliable information, return an empty JSON object {}.
+      `;
+
+      try {
+        const response = await ai.models.generateContent({
+          model: "gemini-3.flash-preview",
+          contents: prompt,
+          config: {
+            tools: [{ googleSearch: {} }],
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                description: { type: Type.STRING },
+                features: { type: Type.ARRAY, items: { type: Type.STRING } },
+                category: { type: Type.STRING, enum: ['Instruments', 'Dynamics', 'Equalizers', 'Reverb & Delay', 'Modulation', 'Distortion & Saturation', 'Utility & Metering', 'Creative FX'] }
+              }
+            }
+          }
+        });
+        const result = JSON.parse(response.text || '{}');
+        
+        // Be more lenient: accept partial results, especially the category.
+        if (result.category) {
+          return {
+            ...plugin,
+            description: result.description || `A ${result.category.toLowerCase()} plugin by ${plugin.vendor}.`,
+            features: result.features || [],
+            type: result.category,
+          };
+        }
+      } catch (error: any) {
+        console.error(`Error enriching '${searchQuery}':`, error);
+        
+        // Detect quota exceeded or other fatal errors
+        const errorMsg = error?.message || "";
+        if (errorMsg.includes("429") || errorMsg.toLowerCase().includes("quota")) {
+          throw new Error("QUOTA_EXCEEDED");
+        }
+        
+        // If it's a generic error, we might want to retry or just fail this specific plugin
+        // But the user wants strictness: "never skip to the recipe page unless all plugin descriptions have been researched"
+        // So we should probably throw for any error that isn't just "not found"
+        throw error;
+      }
+      return null;
+    };
+
+    // 1. Try with version number
+    let enriched = await doEnrichment(`${plugin.vendor} - ${plugin.name} v${plugin.version}`);
+
+    // 2. If that fails, try without version number
+    if (!enriched) {
+      enriched = await doEnrichment(`${plugin.vendor} - ${plugin.name}`);
+    }
+
+    updateProgress();
+
+    // 3. If still no luck, return original with 'Uncategorized'
+    return enriched || {
+      ...plugin,
+      description: `Could not find specific info. This plugin is made by ${plugin.vendor}.`,
+      features: [],
+      type: 'Uncategorized',
+    };
+  };
+
+  // Process all plugins with a concurrency of 10
+  const concurrency = 10;
+  const enrichedPlugins: VSTPlugin[] = [];
+  for (let i = 0; i < plugins.length; i += concurrency) {
+    const batch = plugins.slice(i, i + concurrency);
+    const results = await Promise.all(batch.map(processPlugin));
+    enrichedPlugins.push(...results);
+  }
+
+  return enrichedPlugins;
+};
+
+export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null, starredPlugins: string[] = []): Promise<RecommendationResponse> => {
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
-  const analogStr = !excludeAnalog && (analogInstruments.length > 0 || analogHardware.length > 0) 
-    ? `\nThe user also owns the following real analog equipment:\nInstruments: ${analogInstruments.join(', ')}\nHardware: ${analogHardware.join(', ')}\n\nIMPORTANT SONIC CHARACTERISTICS FOR ANALOG GEAR:\n- Fender Jazzmaster: Bright, chimy, and percussive "surf" tone.\n- Fender Stratocaster: Glassy, quacky, and transparent bright tone.\n- ESP EX-50 (LTD): Heavy, dense, fat, and full sound with humbucker pickups.\n- Fender Precision Bass: Characteristic punchy "galloping" style and mid-range growl.\n- Alhambra 7FC: Bright, aggressive flamenco attack.\n- Yamaha C40: Warm, mellow nylon string tone.\n- Korg Minilogue XD: Modern polyphonic analog warmth with digital multi-engine grit.\n- Behringer TD-3: Classic squelchy 303 acid bass lines.\n- UNO Synth: Aggressive, raw analog monophonic leads.\n- Shure SM57: Industry standard dynamic mic, great for aggressive vocals or snare drums.\n- Electro-Harmonix Big Muff: Iconic thick, creamy fuzz for guitars or synths.\n- Orange Micro Dark: High-gain, aggressive tube-hybrid tone.\n- Ampeg V-4B: Classic all-tube bass grit and punch.\n- Heritage Audio 73 JR II: Classic 1073-style preamp warmth and saturation.\n- Warm Audio WA76-D: Fast, aggressive FET compression.\n\nPlease incorporate these real analog instruments and hardware into the beat recipes where appropriate, alongside the VST plugins. Use their specific sonic identities to inform the 'sourceSoundGoal' and 'loopGuide'.`
-    : '';
+  const analogStr = !excludeAnalog ? generateAnalogStr(analogInstruments, analogHardware) : '';
   const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
+  const starredStr = starredPlugins.length > 0 ? `\nCRITICAL: The user has STARRED (favorited) the following plugins. You MUST prioritize using these plugins in your recipes whenever possible:\n${starredPlugins.join(', ')}` : '';
+  
+  const hasSphereMic = analogHardware.some(h => ['Sphere DLX', 'Sphere LX', 'L22'].includes(h));
+  const sphereMicStr = hasSphereMic ? `\nCRITICAL: The user owns a Universal Audio Sphere (DLX/LX) or Townsend Labs L22 microphone. If the recipe involves vocals or acoustic instruments, you MUST recommend using the 'UAD Sphere Mic Collection', 'Ocean Way Mic Collection', or 'Bill Putnam Mic Collection' plugins. For these plugins, specify the EXACT 'Mic Model' (e.g., LD-47K, LD-67, OW-47, BP-251E) and other relevant parameters (Pattern, Filter, Proximity, Axis) to achieve the desired sound character.` : '';
 
   const prompt = `
     Analyze my VST plugin list and suggest 3 high-level "Beat Recipes" for the craziest rap beat.
@@ -63,6 +215,8 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstrum
     ${pluginListStr}
     ${analogStr}
     ${dawStr}
+    ${starredStr}
+    ${sphereMicStr}
 
     Focus on modern sub-genres: Melodic Trap, Dark Drill, High-Energy Rage.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type (e.g., "Lil Wayne type", "Lil Uzi type", "Travis Scott type").
@@ -80,7 +234,7 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstrum
     - Snare OR Clap pattern (choose one based on style, step numbers 1-16)
     - Hi-Hat pattern (step numbers 1-16, or 1-32 if double time/fast)
     - velocityHumanized (boolean): whether the velocity should be humanized/varied for this section
-    - swingPercentage (number): the recommended swing percentage (0-100) for this section
+    - swing: an object with hiHat, snare, and kick properties, each with a swing percentage (1-100) for this section
   `;
 
   const drumPatternSchema = {
@@ -104,13 +258,21 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstrum
         required: ["isDoubleTime", "steps"]
       },
       velocityHumanized: { type: Type.BOOLEAN },
-      swingPercentage: { type: Type.NUMBER }
+      swing: {
+        type: Type.OBJECT,
+        properties: {
+          kick: { type: Type.NUMBER, minimum: 1, maximum: 100 },
+          snare: { type: Type.NUMBER, minimum: 1, maximum: 100 },
+          hiHat: { type: Type.NUMBER, minimum: 1, maximum: 100 }
+        },
+        required: ["kick", "snare", "hiHat"]
+      }
     },
-    required: ["kick", "snare", "hiHat", "velocityHumanized", "swingPercentage"]
+    required: ["kick", "snare", "hiHat", "velocityHumanized", "swing"]
   };
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: "gemini-3-flash-preview",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -184,12 +346,14 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstrum
   return JSON.parse(jsonStr);
 };
 
-export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: string, analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null): Promise<RecommendationResponse> => {
+export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: string, analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null, starredPlugins: string[] = []): Promise<RecommendationResponse> => {
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
-  const analogStr = !excludeAnalog && (analogInstruments.length > 0 || analogHardware.length > 0) 
-    ? `\nThe user also owns the following real analog equipment:\nInstruments: ${analogInstruments.join(', ')}\nHardware: ${analogHardware.join(', ')}\n\nIMPORTANT SONIC CHARACTERISTICS FOR ANALOG GEAR:\n- Fender Jazzmaster: Bright, chimy, and percussive "surf" tone.\n- Fender Stratocaster: Glassy, quacky, and transparent bright tone.\n- ESP EX-50 (LTD): Heavy, dense, fat, and full sound with humbucker pickups.\n- Fender Precision Bass: Characteristic punchy "galloping" style and mid-range growl.\n- Alhambra 7FC: Bright, aggressive flamenco attack.\n- Yamaha C40: Warm, mellow nylon string tone.\n- Korg Minilogue XD: Modern polyphonic analog warmth with digital multi-engine grit.\n- Behringer TD-3: Classic squelchy 303 acid bass lines.\n- UNO Synth: Aggressive, raw analog monophonic leads.\n- Shure SM57: Industry standard dynamic mic, great for aggressive vocals or snare drums.\n- Electro-Harmonix Big Muff: Iconic thick, creamy fuzz for guitars or synths.\n- Orange Micro Dark: High-gain, aggressive tube-hybrid tone.\n- Ampeg V-4B: Classic all-tube bass grit and punch.\n- Heritage Audio 73 JR II: Classic 1073-style preamp warmth and saturation.\n- Warm Audio WA76-D: Fast, aggressive FET compression.\n\nPlease incorporate these real analog instruments and hardware into the beat recipes where appropriate, alongside the VST plugins. Use their specific sonic identities to inform the 'sourceSoundGoal' and 'loopGuide'.`
-    : '';
+  const analogStr = !excludeAnalog ? generateAnalogStr(analogInstruments, analogHardware) : '';
   const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
+  const starredStr = starredPlugins.length > 0 ? `\nCRITICAL: The user has STARRED (favorited) the following plugins. You MUST prioritize using these plugins in your recipes whenever possible:\n${starredPlugins.join(', ')}` : '';
+
+  const hasSphereMic = analogHardware.some(h => ['Sphere DLX', 'Sphere LX', 'L22'].includes(h));
+  const sphereMicStr = hasSphereMic ? `\nCRITICAL: The user owns a Universal Audio Sphere (DLX/LX) or Townsend Labs L22 microphone. If the recipe involves vocals or acoustic instruments, you MUST recommend using the 'UAD Sphere Mic Collection', 'Ocean Way Mic Collection', or 'Bill Putnam Mic Collection' plugins. For these plugins, specify the EXACT 'Mic Model' (e.g., LD-47K, LD-67, OW-47, BP-251E) and other relevant parameters (Pattern, Filter, Proximity, Axis) to achieve the desired sound character.` : '';
 
   const prompt = `
     Analyze my VST plugin list and suggest 3 high-level "Beat Recipes" specifically for a "${query} type beat".
@@ -197,6 +361,8 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
     ${pluginListStr}
     ${analogStr}
     ${dawStr}
+    ${starredStr}
+    ${sphereMicStr}
 
     Ensure the recipes capture the signature sound, bounce, and atmospheric elements associated with ${query}.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type.
@@ -214,7 +380,7 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
     - Snare OR Clap pattern (choose one based on style, step numbers 1-16)
     - Hi-Hat pattern (step numbers 1-16, or 1-32 if double time/fast)
     - velocityHumanized (boolean): whether the velocity should be humanized/varied for this section
-    - swingPercentage (number): the recommended swing percentage (0-100) for this section
+    - swing: an object with hiHat, snare, and kick properties, each with a swing percentage (1-100) for this section
   `;
 
   const drumPatternSchema = {
@@ -238,13 +404,21 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
         required: ["isDoubleTime", "steps"]
       },
       velocityHumanized: { type: Type.BOOLEAN },
-      swingPercentage: { type: Type.NUMBER }
+      swing: {
+        type: Type.OBJECT,
+        properties: {
+          kick: { type: Type.NUMBER, minimum: 1, maximum: 100 },
+          snare: { type: Type.NUMBER, minimum: 1, maximum: 100 },
+          hiHat: { type: Type.NUMBER, minimum: 1, maximum: 100 }
+        },
+        required: ["kick", "snare", "hiHat"]
+      }
     },
-    required: ["kick", "snare", "hiHat", "velocityHumanized", "swingPercentage"]
+    required: ["kick", "snare", "hiHat", "velocityHumanized", "swing"]
   };
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: "gemini-3-flash-preview",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -318,12 +492,14 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
   return JSON.parse(jsonStr);
 };
 
-export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery: string, analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null): Promise<RecommendationResponse> => {
+export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery: string, analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null, starredPlugins: string[] = []): Promise<RecommendationResponse> => {
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
-  const analogStr = !excludeAnalog && (analogInstruments.length > 0 || analogHardware.length > 0) 
-    ? `\nThe user also owns the following real analog equipment:\nInstruments: ${analogInstruments.join(', ')}\nHardware: ${analogHardware.join(', ')}\n\nIMPORTANT SONIC CHARACTERISTICS FOR ANALOG GEAR:\n- Fender Jazzmaster: Bright, chimy, and percussive "surf" tone.\n- Fender Stratocaster: Glassy, quacky, and transparent bright tone.\n- ESP EX-50 (LTD): Heavy, dense, fat, and full sound with humbucker pickups.\n- Fender Precision Bass: Characteristic punchy "galloping" style and mid-range growl.\n- Alhambra 7FC: Bright, aggressive flamenco attack.\n- Yamaha C40: Warm, mellow nylon string tone.\n- Korg Minilogue XD: Modern polyphonic analog warmth with digital multi-engine grit.\n- Behringer TD-3: Classic squelchy 303 acid bass lines.\n- UNO Synth: Aggressive, raw analog monophonic leads.\n- Shure SM57: Industry standard dynamic mic, great for aggressive vocals or snare drums.\n- Electro-Harmonix Big Muff: Iconic thick, creamy fuzz for guitars or synths.\n- Orange Micro Dark: High-gain, aggressive tube-hybrid tone.\n- Ampeg V-4B: Classic all-tube bass grit and punch.\n- Heritage Audio 73 JR II: Classic 1073-style preamp warmth and saturation.\n- Warm Audio WA76-D: Fast, aggressive FET compression.\n\nPlease incorporate these real analog instruments and hardware into the beat recipes where appropriate, alongside the VST plugins. Use their specific sonic identities to inform the 'sourceSoundGoal' and 'loopGuide'.`
-    : '';
+  const analogStr = !excludeAnalog ? generateAnalogStr(analogInstruments, analogHardware) : '';
   const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
+  const starredStr = starredPlugins.length > 0 ? `\nCRITICAL: The user has STARRED (favorited) the following plugins. You MUST prioritize using these plugins in your recipes whenever possible:\n${starredPlugins.join(', ')}` : '';
+
+  const hasSphereMic = analogHardware.some(h => ['Sphere DLX', 'Sphere LX', 'L22'].includes(h));
+  const sphereMicStr = hasSphereMic ? `\nCRITICAL: The user owns a Universal Audio Sphere (DLX/LX) or Townsend Labs L22 microphone. If the recipe involves vocals or acoustic instruments, you MUST recommend using the 'UAD Sphere Mic Collection', 'Ocean Way Mic Collection', or 'Bill Putnam Mic Collection' plugins. For these plugins, specify the EXACT 'Mic Model' (e.g., LD-47K, LD-67, OW-47, BP-251E) and other relevant parameters (Pattern, Filter, Proximity, Axis) to achieve the desired sound character.` : '';
 
   const prompt = `
     Analyze my VST plugin list and suggest 3 high-level "Beat Recipes" that recreate the production style, bounce, and sonic atmosphere of the song "${songQuery}".
@@ -331,6 +507,8 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
     ${pluginListStr}
     ${analogStr}
     ${dawStr}
+    ${starredStr}
+    ${sphereMicStr}
 
     Ensure the recipes capture the signature sound, instrumentation, and mixing techniques of that specific song.
     For each recipe, also identify 2-3 mainstream or commonly known artists who would typically use that specific beat type.
@@ -348,7 +526,7 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
     - Snare OR Clap pattern (choose one based on style, step numbers 1-16)
     - Hi-Hat pattern (step numbers 1-16, or 1-32 if double time/fast)
     - velocityHumanized (boolean): whether the velocity should be humanized/varied for this section
-    - swingPercentage (number): the recommended swing percentage (0-100) for this section
+    - swing: an object with hiHat, snare, and kick properties, each with a swing percentage (1-100) for this section
   `;
 
   const drumPatternSchema = {
@@ -372,13 +550,21 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
         required: ["isDoubleTime", "steps"]
       },
       velocityHumanized: { type: Type.BOOLEAN },
-      swingPercentage: { type: Type.NUMBER }
+      swing: {
+        type: Type.OBJECT,
+        properties: {
+          kick: { type: Type.NUMBER, minimum: 1, maximum: 100 },
+          snare: { type: Type.NUMBER, minimum: 1, maximum: 100 },
+          hiHat: { type: Type.NUMBER, minimum: 1, maximum: 100 }
+        },
+        required: ["kick", "snare", "hiHat"]
+      }
     },
-    required: ["kick", "snare", "hiHat", "velocityHumanized", "swingPercentage"]
+    required: ["kick", "snare", "hiHat", "velocityHumanized", "swing"]
   };
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: "gemini-3-flash-preview",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -479,7 +665,7 @@ export const adaptRecipeToMyPlugins = async (recipe: SavedRecipe, myPlugins: VST
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: "gemini-3-flash-preview",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -589,7 +775,7 @@ export const getDetailedParameters = async (recipe: BeatRecipe): Promise<any> =>
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-pro-preview",
+    model: "gemini-3-flash-preview",
     contents: prompt,
     config: {
       responseMimeType: "application/json",

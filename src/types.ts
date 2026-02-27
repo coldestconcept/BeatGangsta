@@ -5,6 +5,15 @@ export interface VSTPlugin {
   type: string;
   version: string;
   lastModified: string;
+  description?: string;
+  features?: string[];
+}
+
+export interface Hardware {
+  vendor: string;
+  name: string;
+  type: 'instrument' | 'hardware';
+  description?: string;
 }
 
 export interface SignalChainStep {

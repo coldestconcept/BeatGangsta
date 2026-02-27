@@ -382,6 +382,8 @@ export const equipmentDetails: Record<string, string> = {
   "dBooster": "An in-line signal booster for passive microphones.",
   "PS-101": "A pop filter for vocal recording.",
   "L22": "A large-diaphragm condenser microphone that models a wide range of classic microphones.",
+  "Sphere DLX": "A premium modeling microphone that accurately emulates 38 classic ribbon, condenser, and dynamic mics.",
+  "Sphere LX": "A modeling microphone that accurately emulates 20 classic ribbon, condenser, and dynamic mics.",
   "RE20": "A broadcast industry standard, this dynamic microphone is also a favorite for kick drums and bass amps.",
   "RE320": "A modern take on the RE20, with a dual-voicing switch for versatile sound shaping.",
   "ND68": "A large-diaphragm dynamic microphone designed for kick drums, with a powerful, punchy sound.",

@@ -106,14 +106,14 @@ export const AnalogEquipmentModal: React.FC<AnalogEquipmentModalProps> = ({ isOp
       <div className={`w-full max-w-2xl h-[70vh] flex flex-col rounded-[3rem] border shadow-2xl overflow-hidden ${themeClasses}`}>
         
         {/* Header */}
-        <div className="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between bg-black/20">
+        <div className="p-6 sm:p-8 border-b border-white/10 flex items-center justify-between bg-black/20">
           <div className="flex items-center gap-2 sm:gap-4">
             {level !== 'type' && (
               <button onClick={handleBack} className="p-1 sm:p-2 rounded-full hover:bg-white/10 transition-colors">
                 <ChevronLeft size={20} />
               </button>
             )}
-            <h2 className="text-base sm:text-xl font-black uppercase tracking-tight sm:tracking-widest">
+            <h2 className="text-sm sm:text-xl font-black uppercase tracking-tight sm:tracking-widest">
               {level === 'type' ? 'Equipment' : 
                level === 'category' ? `${selectedType} Categories` :
                level === 'brand' ? `${selectedCategory} Brands` :
@@ -165,6 +165,8 @@ export const AnalogEquipmentModal: React.FC<AnalogEquipmentModalProps> = ({ isOp
                           e.stopPropagation();
                           if (selectedType) {
                             toggleItem(`${selectedBrand} ${item}`, selectedType);
+                            setActiveIndex(idx);
+                            setExpandedItem(item);
                           }
                         }}
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isSelectedModel ? 'bg-white/90 text-black' : 'bg-white/20 hover:bg-white/40'}`}>

@@ -116,6 +116,7 @@ export const analogHardware = {
     "Royer": ["R-121", "R-122", "R-10", "SF-24", "SF-12", "SF-2", "R-122V", "R-121 Live", "dBooster", "PS-101"],
     "IK Multimedia": ["iRig Mic Studio"],
     "Townsend Labs": ["L22"],
+    "Universal Audio": ["Sphere DLX", "Sphere LX", "Ocean Way Mic Collection", "Bill Putnam Mic Collection", "Townsend Labs Sphere L22"],
     "Electro-Voice": ["RE20", "RE320", "ND68", "ND76", "ND86", "ND96", "PL33", "PL35", "PL37", "RE16"],
     "Mojave": ["MA-200", "MA-201fet", "MA-300", "MA-301fet", "MA-1000", "MA-D", "MA-V", "MA-K", "MA-C", "MA-S"],
     "Lauten Audio": ["LA-220", "LA-320", "Eden LT-386", "Atlantis FC-387", "Oceanus LT-381", "Clarion FC-357", "Snare Mic", "Tom Mic", "Kick Mic", "Overhead Mic"],
