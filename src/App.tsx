@@ -14,6 +14,7 @@ import { LeprechaunField } from './components/LeprechaunField';
 import { FoodField } from './components/FoodField';
 import { Hourglass } from './components/Hourglass';
 import { RecipeViewerModal } from './components/RecipeViewerModal';
+import { APIKeyModal } from './components/APIKeyModal';
 
 import { CollaborationModal } from './components/CollaborationModal';
 import { FriendsInfoModal } from './components/FriendsInfoModal';
@@ -230,19 +231,30 @@ const App: React.FC = () => {
       const oldHardware = localStorage.getItem('bg_analog_hardware');
 
       if (oldInstruments || oldHardware) {
+        const apiKey = localStorage.getItem('bg_gemini_api_key');
+        if (!apiKey) return; // Skip if no key yet, will be handled when user adds key
+
         const instrumentsToMigrate = oldInstruments ? JSON.parse(oldInstruments) : [];
         const hardwareToMigrate = oldHardware ? JSON.parse(oldHardware) : [];
 
         if (instrumentsToMigrate.length > 0 && typeof instrumentsToMigrate[0] === 'string') {
-          const enrichedInstruments = await enrichHardware(instrumentsToMigrate);
-          setAnalogInstruments(enrichedInstruments);
-          localStorage.removeItem('bg_analog_instruments');
+          try {
+            const enrichedInstruments = await enrichHardware(instrumentsToMigrate);
+            setAnalogInstruments(enrichedInstruments);
+            localStorage.removeItem('bg_analog_instruments');
+          } catch (e) {
+            console.error("Migration enrichment failed", e);
+          }
         }
 
         if (hardwareToMigrate.length > 0 && typeof hardwareToMigrate[0] === 'string') {
-          const enrichedHardware = await enrichHardware(hardwareToMigrate);
-          setAnalogHardware(enrichedHardware);
-          localStorage.removeItem('bg_analog_hardware');
+          try {
+            const enrichedHardware = await enrichHardware(hardwareToMigrate);
+            setAnalogHardware(enrichedHardware);
+            localStorage.removeItem('bg_analog_hardware');
+          } catch (e) {
+            console.error("Migration enrichment failed", e);
+          }
         }
       }
     };
@@ -257,6 +269,8 @@ const App: React.FC = () => {
   const [activeSession, setActiveSession] = useState<SharedSession | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [showAPIKeyModal, setShowAPIKeyModal] = useState(false);
+  const [pendingPluginsInput, setPendingPluginsInput] = useState<string | null>(null);
 
   const toggleStar = (itemName: string) => {
     if (starredPlugins.includes(itemName)) {
@@ -291,7 +305,7 @@ const App: React.FC = () => {
     }
   };
 
-  const currentAppName = highEyes ? "BeatRetard" : "BeatGenius";
+  const currentAppName = highEyes ? "BeatRetard" : "BeatGangsta";
   const [isSecretUnlocked, setIsSecretUnlocked] = useState(() => localStorage.getItem('bg_hustle_unlocked') === 'true');
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
@@ -537,14 +551,14 @@ const App: React.FC = () => {
       recipe: recipeToExport,
       senderPlugins: plugins,
       preset: currentPreset,
-      senderName: user?.name || "BeatGenius Producer"
+      senderName: user?.name || "BeatGangsta Producer"
     };
 
     const blob = new Blob([JSON.stringify(session, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${user?.name || 'Producer'}_BeatGenius_Rig_${recipeToExport.title.replace(/\s+/g, '_')}.json`;
+    link.download = `${user?.name || 'Producer'}_BeatGangsta_Rig_${recipeToExport.title.replace(/\s+/g, '_')}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -682,6 +696,15 @@ const App: React.FC = () => {
 
   const parsePlugins = async (input: string) => {
     if (!input.trim()) return;
+
+    // Check for API Key before proceeding
+    const apiKey = localStorage.getItem('bg_gemini_api_key');
+    if (!apiKey) {
+      setPendingPluginsInput(input);
+      setShowAPIKeyModal(true);
+      return;
+    }
+
     const lines = input.trim().split('\n');
     const isReaperIni = lines.some(l => l.includes('=') && (l.includes('.dll') || l.includes('.vst3')));
     let parsed: VSTPlugin[] = [];
@@ -751,6 +774,14 @@ const App: React.FC = () => {
       setPlugins([]); // Don't allow proceeding with unresearched plugins
     } finally {
       setIsEnrichingLibrary(false);
+      setPendingPluginsInput(null);
+    }
+  };
+
+  const handleAPIKeySave = (key: string) => {
+    setShowAPIKeyModal(false);
+    if (pendingPluginsInput) {
+      parsePlugins(pendingPluginsInput);
     }
   };
 
@@ -805,6 +836,13 @@ const App: React.FC = () => {
 
   const handleGenerate = async () => {
     if (plugins.length === 0) return;
+
+    const apiKey = localStorage.getItem('bg_gemini_api_key');
+    if (!apiKey) {
+      setShowAPIKeyModal(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
@@ -823,9 +861,13 @@ const App: React.FC = () => {
         generatedAt: new Date().toISOString()
       }));
       setHistory(prev => [...newHistory, ...prev].slice(0, 50));
-    } catch (err) {
+    } catch (err: any) {
       clearTimeout(timeoutId);
-      setError("Couldn't think of any beats right now. Try again in a second!");
+      if (err.message === "API_KEY_MISSING") {
+        setShowAPIKeyModal(true);
+      } else {
+        setError("Couldn't think of any beats right now. Try again in a second!");
+      }
     } finally {
       setLoading(false);
     }
@@ -833,6 +875,13 @@ const App: React.FC = () => {
 
   const handleTypeBeatSearch = async () => {
     if (plugins.length === 0 || !typeBeatSearch.trim()) return;
+
+    const apiKey = localStorage.getItem('bg_gemini_api_key');
+    if (!apiKey) {
+      setShowAPIKeyModal(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -851,9 +900,13 @@ const App: React.FC = () => {
       }));
       setHistory(prev => [...newHistory, ...prev].slice(0, 50));
       setTypeBeatSearch('');
-    } catch (err) {
+    } catch (err: any) {
       clearTimeout(timeoutId);
-      setError("Couldn't find any recipes for that vibe. Try a different search!");
+      if (err.message === "API_KEY_MISSING") {
+        setShowAPIKeyModal(true);
+      } else {
+        setError("Couldn't find any recipes for that vibe. Try a different search!");
+      }
     } finally {
       setLoading(false);
     }
@@ -861,6 +914,13 @@ const App: React.FC = () => {
 
   const handleSongSearch = async () => {
     if (plugins.length === 0 || !songSearch.trim()) return;
+
+    const apiKey = localStorage.getItem('bg_gemini_api_key');
+    if (!apiKey) {
+      setShowAPIKeyModal(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -879,9 +939,13 @@ const App: React.FC = () => {
       }));
       setHistory(prev => [...newHistory, ...prev].slice(0, 50));
       setSongSearch('');
-    } catch (err) {
+    } catch (err: any) {
       clearTimeout(timeoutId);
-      setError("Couldn't find any recipes for that song. Try a different track!");
+      if (err.message === "API_KEY_MISSING") {
+        setShowAPIKeyModal(true);
+      } else {
+        setError("Couldn't find any recipes for that song. Try a different track!");
+      }
     } finally {
       setLoading(false);
     }
@@ -1119,7 +1183,7 @@ const App: React.FC = () => {
           onExportRig={handleExportRigFile}
           onImportRig={handleImportRig}
           allPlugins={plugins}
-          userName={user?.name || "BeatGenius Producer"}
+          userName={user?.name || "BeatGangsta Producer"}
           onOpen={async (r) => {
             if (r.linkedPresetId) {
               const linked = presets.find(p => p.id === r.linkedPresetId);
@@ -1155,6 +1219,16 @@ const App: React.FC = () => {
           onLinkPreset={(pid) => updateRecipeLinkedPreset(viewingRecipe.id, pid)}
         />
       )}
+
+      <APIKeyModal 
+        isOpen={showAPIKeyModal}
+        onClose={() => {
+          setShowAPIKeyModal(false);
+          setPendingPluginsInput(null);
+        }}
+        onSave={handleAPIKeySave}
+        theme={theme}
+      />
 
       {activeSession && (
         <CollaborationModal 
@@ -1511,8 +1585,13 @@ const App: React.FC = () => {
               <div className="flex flex-col items-center mb-10 text-center">
                 <Logo size={240} grillStyle={grillStyle} knifeStyle={knifeStyle} duragStyle={duragStyle} pendantStyle={pendantStyle} chainStyle={chainStyle} theme={theme} saberColor={saberColor} showChain={showChain} highEyes={highEyes} isCigarEquipped={isCigarEquipped} isTossingCigar={isTossingCigar} showChefHat={showChefHat} showSparkles={showSparkles} onClick={cycleGrill} />
                 <h2 className={`text-3xl sm:text-5xl font-black tracking-tighter select-none ${theme === 'chef-mode' ? 'mt-4 sm:mt-8' : 'mt-8'} ${theme === 'coldest' || theme === 'chef-mode' ? 'text-slate-800' : 'text-white'}`}>
-                  {theme === 'chef-mode' ? "Let's cook up some fire!" : highEyes ? "Let's get high!" : "Let's go to the top!"}
+                  {theme === 'chef-mode' ? "Let's cook up some fire!" : highEyes ? "Let's get high!" : theme === 'coldest' ? "The coldest beats in the streets." : "Let's go to the top!"}
                 </h2>
+                {theme === 'coldest' && !highEyes && (
+                  <p className="text-[10px] font-black opacity-40 uppercase tracking-[0.4em] mt-2 text-slate-600 select-none">
+                    only with BeatGangsta
+                  </p>
+                )}
               </div>
               <div 
                 onClick={() => fileInputRef.current?.click()}

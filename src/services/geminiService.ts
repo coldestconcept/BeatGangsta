@@ -2,9 +2,16 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { VSTPlugin, RecommendationResponse, BeatRecipe, RecipeParameters, SavedRecipe } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const getAI = () => {
+  const apiKey = localStorage.getItem('bg_gemini_api_key');
+  if (!apiKey) {
+    throw new Error("API_KEY_MISSING");
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export const categorizeAndCompareLibraries = async (senderPlugins: VSTPlugin[], myPlugins: VSTPlugin[]) => {
+  const ai = getAI();
   const senderStr = senderPlugins.map(p => `${p.vendor} - ${p.name}`).join('\n');
   const receiverStr = myPlugins.map(p => `${p.vendor} - ${p.name}`).join('\n');
 
@@ -100,9 +107,10 @@ export const enrichPluginLibrary = async (
 ): Promise<VSTPlugin[]> => {
   let processedCount = 0;
   const startTime = Date.now();
+  const ai = getAI();
 
-  const updateProgress = () => {
-    processedCount++;
+  const updateProgress = (count: number) => {
+    processedCount += count;
     const progress = Math.round((processedCount / plugins.length) * 100);
     const elapsedTime = Date.now() - startTime;
     const timePerPlugin = elapsedTime / processedCount;
@@ -111,96 +119,97 @@ export const enrichPluginLibrary = async (
     onProgress(progress, estimatedTimeLeft);
   };
 
-  const processPlugin = async (plugin: VSTPlugin): Promise<VSTPlugin> => {
-    const doEnrichment = async (searchQuery: string) => {
-      const prompt = `
-        You are a VST plugin expert. For the plugin "${searchQuery}", provide a JSON object with the following information. 
-        Use the googleSearch tool to find accurate, version-specific details if possible.
+  const processBatch = async (batch: VSTPlugin[]): Promise<VSTPlugin[]> => {
+    const prompt = `
+      You are a VST plugin expert. Research the following ${batch.length} plugins and provide a JSON array of objects.
+      
+      Plugins to research:
+      ${batch.map((p, idx) => `${idx + 1}. ${p.vendor} - ${p.name} (v${p.version})`).join('\n')}
 
-        - description: A short, engaging summary (1-2 sentences). If the version is old, do not mention features from newer versions.
-        - features: An array of 2-3 unique features of this version.
-        - category: ONE of the following: 'Instruments', 'Dynamics', 'Equalizers', 'Reverb & Delay', 'Modulation', 'Distortion & Saturation', 'Utility & Metering', 'Creative FX'.
+      For each plugin, provide:
+      - description: A short, engaging summary (1-2 sentences).
+      - features: An array of 2-3 unique features.
+      - category: ONE of: 'Instruments', 'Dynamics', 'Equalizers', 'Reverb & Delay', 'Modulation', 'Distortion & Saturation', 'Utility & Metering', 'Creative FX'.
 
-        If you cannot find reliable information, return an empty JSON object {}.
-      `;
+      INSTRUCTIONS:
+      1. Use your internal knowledge first. 
+      2. ONLY use the googleSearch tool if you are unsure about a plugin's specific category or features.
+      3. If a specific version (e.g. v${batch[0].version}) is hard to find, provide info for the general plugin but note it.
+      4. Return exactly ${batch.length} objects in the same order as the input list.
+      5. If you absolutely cannot find info for a plugin, return an object with category: 'Uncategorized'.
+    `;
 
-      try {
-        const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
-          contents: prompt,
-          config: {
-            tools: [{ googleSearch: {} }],
-            responseMimeType: "application/json",
-            responseSchema: {
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          tools: [{ googleSearch: {} }],
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.ARRAY,
+            items: {
               type: Type.OBJECT,
               properties: {
                 description: { type: Type.STRING },
                 features: { type: Type.ARRAY, items: { type: Type.STRING } },
-                category: { type: Type.STRING, enum: ['Instruments', 'Dynamics', 'Equalizers', 'Reverb & Delay', 'Modulation', 'Distortion & Saturation', 'Utility & Metering', 'Creative FX'] }
-              }
+                category: { type: Type.STRING, enum: ['Instruments', 'Dynamics', 'Equalizers', 'Reverb & Delay', 'Modulation', 'Distortion & Saturation', 'Utility & Metering', 'Creative FX', 'Uncategorized'] }
+              },
+              required: ["category"]
             }
           }
-        });
-        const result = JSON.parse(response.text || '{}');
-        
-        // Be more lenient: accept partial results, especially the category.
-        if (result.category) {
-          return {
-            ...plugin,
-            description: result.description || `A ${result.category.toLowerCase()} plugin by ${plugin.vendor}.`,
-            features: result.features || [],
-            type: result.category,
-          };
         }
-      } catch (error: any) {
-        console.error(`Error enriching '${searchQuery}':`, error);
-        
-        // Detect quota exceeded or other fatal errors
-        const errorMsg = error?.message || "";
-        if (errorMsg.includes("429") || errorMsg.toLowerCase().includes("quota")) {
-          throw new Error("QUOTA_EXCEEDED");
-        }
-        
-        // If it's a generic error, we might want to retry or just fail this specific plugin
-        // But the user wants strictness: "never skip to the recipe page unless all plugin descriptions have been researched"
-        // So we should probably throw for any error that isn't just "not found"
-        throw error;
+      });
+
+      const results = JSON.parse(response.text || '[]');
+      
+      const enrichedBatch = batch.map((plugin, idx) => {
+        const result = results[idx] || {};
+        return {
+          ...plugin,
+          description: result.description || `A ${result.category?.toLowerCase() || 'plugin'} by ${plugin.vendor}.`,
+          features: result.features || [],
+          type: result.category || 'Uncategorized',
+        };
+      });
+
+      updateProgress(batch.length);
+      return enrichedBatch;
+    } catch (error: any) {
+      console.error(`Error enriching batch:`, error);
+      const errorMsg = error?.message || "";
+      if (errorMsg.includes("429") || errorMsg.toLowerCase().includes("quota")) {
+        throw new Error("QUOTA_EXCEEDED");
       }
-      return null;
-    };
-
-    // 1. Try with version number
-    let enriched = await doEnrichment(`${plugin.vendor} - ${plugin.name} v${plugin.version}`);
-
-    // 2. If that fails, try without version number
-    if (!enriched) {
-      enriched = await doEnrichment(`${plugin.vendor} - ${plugin.name}`);
+      
+      // If a batch fails, we can't easily recover without strictness issues, 
+      // but let's try to return uncategorized for this batch to keep moving if it's not a quota issue
+      // However, user wants strictness, so we throw.
+      throw error;
     }
-
-    updateProgress();
-
-    // 3. If still no luck, return original with 'Uncategorized'
-    return enriched || {
-      ...plugin,
-      description: `Could not find specific info. This plugin is made by ${plugin.vendor}.`,
-      features: [],
-      type: 'Uncategorized',
-    };
   };
 
-  // Process all plugins with a concurrency of 10
-  const concurrency = 10;
+  // Process plugins in batches of 5 with a concurrency of 3 batches (15 plugins at a time)
+  const batchSize = 5;
+  const concurrency = 3;
   const enrichedPlugins: VSTPlugin[] = [];
-  for (let i = 0; i < plugins.length; i += concurrency) {
-    const batch = plugins.slice(i, i + concurrency);
-    const results = await Promise.all(batch.map(processPlugin));
-    enrichedPlugins.push(...results);
+  
+  for (let i = 0; i < plugins.length; i += batchSize * concurrency) {
+    const chunk = plugins.slice(i, i + batchSize * concurrency);
+    const batches = [];
+    for (let j = 0; j < chunk.length; j += batchSize) {
+      batches.push(chunk.slice(j, j + batchSize));
+    }
+    
+    const results = await Promise.all(batches.map(processBatch));
+    results.forEach(batchResult => enrichedPlugins.push(...batchResult));
   }
 
   return enrichedPlugins;
 };
 
 export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null, starredPlugins: string[] = []): Promise<RecommendationResponse> => {
+  const ai = getAI();
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
   const analogStr = !excludeAnalog ? generateAnalogStr(analogInstruments, analogHardware) : '';
   const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
@@ -347,6 +356,7 @@ export const getBeatRecommendations = async (plugins: VSTPlugin[], analogInstrum
 };
 
 export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: string, analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null, starredPlugins: string[] = []): Promise<RecommendationResponse> => {
+  const ai = getAI();
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
   const analogStr = !excludeAnalog ? generateAnalogStr(analogInstruments, analogHardware) : '';
   const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
@@ -493,6 +503,7 @@ export const getCustomBeatRecommendations = async (plugins: VSTPlugin[], query: 
 };
 
 export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery: string, analogInstruments: string[] = [], analogHardware: string[] = [], excludeAnalog: boolean = false, dawType: string | null = null, starredPlugins: string[] = []): Promise<RecommendationResponse> => {
+  const ai = getAI();
   const pluginListStr = plugins.map(p => `${p.vendor} - ${p.name} (${p.type})`).join('\n');
   const analogStr = !excludeAnalog ? generateAnalogStr(analogInstruments, analogHardware) : '';
   const dawStr = dawType ? `\nThe user is using ${dawType} as their DAW. Include specific instructions or tips for ${dawType} where relevant in the guides or recipes.` : '';
@@ -639,6 +650,7 @@ export const getSongBeatRecommendations = async (plugins: VSTPlugin[], songQuery
 };
 
 export const adaptRecipeToMyPlugins = async (recipe: SavedRecipe, myPlugins: VSTPlugin[]): Promise<SavedRecipe> => {
+  const ai = getAI();
   const receiverStr = myPlugins.map(p => `${p.vendor} - ${p.name}`).join('\n');
 
   const prompt = `
@@ -753,6 +765,7 @@ export const adaptRecipeToMyPlugins = async (recipe: SavedRecipe, myPlugins: VST
 };
 
 export const getDetailedParameters = async (recipe: BeatRecipe): Promise<any> => {
+  const ai = getAI();
   const prompt = `
     For the following Beat Recipe, provide in-depth plugin parameters and beginner-friendly explanations for EVERY plugin mentioned.
     

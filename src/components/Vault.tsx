@@ -34,7 +34,7 @@ const MagazineMockup: React.FC<{ theme: AppTheme }> = ({ theme }) => {
       text: 'text-[#082f49]',
       accent: 'bg-white/50 border-white/40',
       tag: 'bg-sky-500',
-      title: 'BeatGenius Winter Quarterly'
+      title: 'BeatGangsta Winter Quarterly'
     },
     'crazy-bird': {
       bg: 'bg-[#1a0505]',
@@ -164,7 +164,7 @@ export const Vault: React.FC<VaultProps> = ({
           alert("Invalid rig file format.");
         }
       } catch (err) {
-        alert("Could not read rig file. Make sure it's a valid .json exported from BeatGenius.");
+        alert("Could not read rig file. Make sure it's a valid .json exported from BeatGangsta.");
       }
     };
     reader.readAsText(file);

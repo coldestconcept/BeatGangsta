@@ -1,0 +1,734 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "description": "Offline Beat Recipe Database for Gemma/Local LLMs",
+    "generated_at": "2026-02-27",
+    "count": 10
+  },
+  "recipes": [
+    {
+      "title": "Woo Walk Protocol",
+      "style": "NY Drill",
+      "bpm": 142,
+      "description": "Aggressive, sliding 808s with dark, minor-key piano melodies and scattered hi-hats.",
+      "artistTypes": ["Pop Smoke", "Fivio Foreign", "Sheff G"],
+      "ingredients": [
+        {
+          "instrument": "Piano",
+          "sourceSoundGoal": "Dark, detuned upright piano. Low-pass filtered.",
+          "processing": [
+            { "pluginName": "RC-20 Retro Color", "purpose": "Add wobble and noise for texture" },
+            { "pluginName": "ValhallaRoom", "purpose": "Short, dark reverb to place it in a room" }
+          ],
+          "loopGuide": "Use minor chords. Play a simple melody on top. Leave space for the 808 slides."
+        },
+        {
+          "instrument": "808 Bass",
+          "sourceSoundGoal": "Distorted, long-tail 808. Must have glide enabled.",
+          "processing": [
+            { "pluginName": "CamelCrusher", "purpose": "Hard distortion" },
+            { "pluginName": "Pro-Q 3", "purpose": "Cut mud around 200Hz" }
+          ],
+          "loopGuide": "Use extensive glide notes. Slide up an octave at the end of bars."
+        }
+      ],
+      "layeringStrategy": "Piano provides the dark atmosphere. 808 takes up all the low-end and low-mids. Keep the hi-hats sharp and loud to cut through.",
+      "mastering": ["Soft Clipper", "Limiter"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 20 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 35 }
+        },
+        "hook": {
+          "kick": [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 35 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 20 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Atlanta Night Drive",
+      "style": "Melodic Trap",
+      "bpm": 130,
+      "description": "Smooth, emotional trap with ambient pads and hard-hitting drums.",
+      "artistTypes": ["Lil Baby", "Gunna", "Future"],
+      "ingredients": [
+        {
+          "instrument": "Pad",
+          "sourceSoundGoal": "Warm, analog pad with slow attack.",
+          "processing": [
+            { "pluginName": "HalfTime", "purpose": "Slow down for atmosphere" },
+            { "pluginName": "EffectRack", "purpose": "Chorus and Phaser" }
+          ],
+          "loopGuide": "Play long, sustained chords. Use 7th and 9th chords for emotion."
+        },
+        {
+          "instrument": "Lead Guitar",
+          "sourceSoundGoal": "Clean electric guitar with delay.",
+          "processing": [
+            { "pluginName": "Guitar Rig 6", "purpose": "Clean amp simulation" },
+            { "pluginName": "EchoBoy", "purpose": "Dotted 1/8th note delay" }
+          ],
+          "loopGuide": "Play a simple, repetitive counter-melody in the higher octaves."
+        }
+      ],
+      "layeringStrategy": "Pads fill the background. Guitar sits in the high-mids. 808 and Kick are locked together.",
+      "mastering": ["Ozone Imager", "L2 Limiter"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 15 }
+        },
+        "hook": {
+          "kick": [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 15 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Rage System",
+      "style": "Rage / Hyperpop",
+      "bpm": 155,
+      "description": "High energy, distorted synth leads with busy hi-hats.",
+      "artistTypes": ["Playboi Carti", "Yeat", "Trippie Redd"],
+      "ingredients": [
+        {
+          "instrument": "Super Saw Synth",
+          "sourceSoundGoal": "Bright, detuned saw wave chords.",
+          "processing": [
+            { "pluginName": "OTT", "purpose": "Extreme multiband compression" },
+            { "pluginName": "Decapitator", "purpose": "Saturation" }
+          ],
+          "loopGuide": "Play simple triads. Hold the chords for the full bar."
+        },
+        {
+          "instrument": "Lead Synth",
+          "sourceSoundGoal": "Monophonic, piercing lead.",
+          "processing": [
+            { "pluginName": "ValhallaDelay", "purpose": "Ping pong delay" },
+            { "pluginName": "Portal", "purpose": "Granular effects" }
+          ],
+          "loopGuide": "Fast, repetitive melody with lots of pitch bends."
+        }
+      ],
+      "layeringStrategy": "Super saws take up the entire mid-range. Lead sits on top. Bass is a distorted sine wave.",
+      "mastering": ["Soft Clipper", "Maximizer"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "hook": {
+          "kick": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Concrete Jungle",
+      "style": "Boom Bap",
+      "bpm": 90,
+      "description": "Gritty, sampled drums with jazz piano chops and upright bass.",
+      "artistTypes": ["Griselda", "Joey Bada$$", "J. Cole"],
+      "ingredients": [
+        {
+          "instrument": "Sampled Piano",
+          "sourceSoundGoal": "Old jazz record sample.",
+          "processing": [
+            { "pluginName": "Serato Sample", "purpose": "Chopping the sample" },
+            { "pluginName": "RC-20 Retro Color", "purpose": "Vinyl crackle and noise" }
+          ],
+          "loopGuide": "Chop the sample on the 16th notes. Leave some silence between chops for groove."
+        },
+        {
+          "instrument": "Upright Bass",
+          "sourceSoundGoal": "Acoustic bass with finger noise.",
+          "processing": [
+            { "pluginName": "Bass Rider", "purpose": "Leveling" },
+            { "pluginName": "R-Bass", "purpose": "Enhance low harmonics" }
+          ],
+          "loopGuide": "Walk the bass line. Use ghost notes."
+        }
+      ],
+      "layeringStrategy": "Drums are the loudest element. Sample sits in the mid-range. Bass fills the low end.",
+      "mastering": ["Tape Emulation", "Limiter"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 40 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 20, "snare": 10, "hiHat": 45 }
+        },
+        "hook": {
+          "kick": [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 20, "snare": 10, "hiHat": 45 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 40 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Study Beats",
+      "style": "Lo-Fi Hip Hop",
+      "bpm": 85,
+      "description": "Relaxed, nostalgic vibes with vinyl crackle and simple melodies.",
+      "artistTypes": ["Nujabes", "J Dilla", "Lofi Girl"],
+      "ingredients": [
+        {
+          "instrument": "Electric Piano",
+          "sourceSoundGoal": "Rhodes or Wurlitzer with tremolo.",
+          "processing": [
+            { "pluginName": "RC-20 Retro Color", "purpose": "Wobble and magnetic noise" },
+            { "pluginName": "ValhallaVintageVerb", "purpose": "Short ambience" }
+          ],
+          "loopGuide": "Play jazz chords (7ths, 9ths). Keep the velocity low and soft."
+        },
+        {
+          "instrument": "Foley Percussion",
+          "sourceSoundGoal": "Keys keys, rain, or paper sounds.",
+          "processing": [
+            { "pluginName": "Pro-Q 3", "purpose": "Cut lows and highs" },
+            { "pluginName": "Pancake 2", "purpose": "Auto-panning" }
+          ],
+          "loopGuide": "Layer these sounds with the snare or hi-hats for texture."
+        }
+      ],
+      "layeringStrategy": "Keep everything centered around the mid-range. Highs should be rolled off. Lows should be warm but not overpowering.",
+      "mastering": ["Tape Emulation", "Limiter"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 50 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 30, "snare": 20, "hiHat": 50 }
+        },
+        "hook": {
+          "kick": [1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 30, "snare": 20, "hiHat": 50 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 50 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Motor City Bounce",
+      "style": "Detroit Trap",
+      "bpm": 190,
+      "description": "Fast-paced, off-beat piano riffs with punchy, distorted bass and rapid-fire lyrics.",
+      "artistTypes": ["Babyface Ray", "Rio Da Yung OG", "Veeze"],
+      "ingredients": [
+        {
+          "instrument": "Piano",
+          "sourceSoundGoal": "Bright, aggressive grand piano.",
+          "processing": [
+            { "pluginName": "Pro-Q 3", "purpose": "Boost highs for attack" },
+            { "pluginName": "ValhallaRoom", "purpose": "Very short room reverb" }
+          ],
+          "loopGuide": "Play fast, syncopated riffs. Use chromatic passing notes."
+        },
+        {
+          "instrument": "Synth Bass",
+          "sourceSoundGoal": "Short, punchy sine or triangle bass.",
+          "processing": [
+            { "pluginName": "CamelCrusher", "purpose": "Saturation" },
+            { "pluginName": "L1 Limiter", "purpose": "Maximize loudness" }
+          ],
+          "loopGuide": "Follow the kick exactly. Keep notes short and staccato."
+        }
+      ],
+      "layeringStrategy": "Piano drives the rhythm. Bass is tight and punchy. Drums are sparse but hit hard.",
+      "mastering": ["Soft Clipper", "Maximizer"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "verse": {
+          "kick": [1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "hook": {
+          "kick": [1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "London Fog",
+      "style": "UK Drill",
+      "bpm": 140,
+      "description": "Dark, eerie melodies with sliding 808s and syncopated hi-hats.",
+      "artistTypes": ["Central Cee", "Digga D", "Headie One"],
+      "ingredients": [
+        {
+          "instrument": "Choir",
+          "sourceSoundGoal": "Haunting, gothic choir.",
+          "processing": [
+            { "pluginName": "ValhallaShimmer", "purpose": "Ethereal reverb" },
+            { "pluginName": "EffectRack", "purpose": "Dark saturation" }
+          ],
+          "loopGuide": "Play long, sustained chords. Use minor keys."
+        },
+        {
+          "instrument": "808 Bass",
+          "sourceSoundGoal": "Distorted, sliding 808.",
+          "processing": [
+            { "pluginName": "CamelCrusher", "purpose": "Hard distortion" },
+            { "pluginName": "Pro-Q 3", "purpose": "Cut mud" }
+          ],
+          "loopGuide": "Use extensive glide notes. Slide up an octave at the end of bars."
+        }
+      ],
+      "layeringStrategy": "Choir provides the atmosphere. 808 takes up the low end. Hi-hats provide the rhythm.",
+      "mastering": ["Soft Clipper", "Limiter"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 20 }
+        },
+        "hook": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 20 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Lagos Vibes",
+      "style": "Afrobeat",
+      "bpm": 100,
+      "description": "Smooth, rhythmic afrobeat with shaker loops and guitar plucks.",
+      "artistTypes": ["Burna Boy", "Wizkid", "Davido"],
+      "ingredients": [
+        {
+          "instrument": "Guitar",
+          "sourceSoundGoal": "Clean, muted electric guitar.",
+          "processing": [
+            { "pluginName": "Guitar Rig 6", "purpose": "Clean amp" },
+            { "pluginName": "ValhallaVintageVerb", "purpose": "Short plate reverb" }
+          ],
+          "loopGuide": "Play syncopated, rhythmic chords. Focus on the off-beats."
+        },
+        {
+          "instrument": "Log Drum",
+          "sourceSoundGoal": "Deep, percussive log drum bass.",
+          "processing": [
+            { "pluginName": "R-Bass", "purpose": "Enhance low end" },
+            { "pluginName": "Pro-Q 3", "purpose": "Cut highs" }
+          ],
+          "loopGuide": "Play a simple, rhythmic bassline. Use slides."
+        }
+      ],
+      "layeringStrategy": "Guitar provides the rhythm. Log drum drives the low end. Shakers fill the high end.",
+      "mastering": ["Ozone Imager", "L2 Limiter"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 30 }
+        },
+        "hook": {
+          "kick": [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 30 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Island Heat",
+      "style": "Reggaeton",
+      "bpm": 95,
+      "description": "Upbeat, danceable reggaeton with dembow rhythms and bright synths.",
+      "artistTypes": ["Bad Bunny", "J Balvin", "Karol G"],
+      "ingredients": [
+        {
+          "instrument": "Synth Pluck",
+          "sourceSoundGoal": "Bright, tropical pluck.",
+          "processing": [
+            { "pluginName": "ValhallaDelay", "purpose": "Dotted 1/8th delay" },
+            { "pluginName": "Pro-Q 3", "purpose": "Boost highs" }
+          ],
+          "loopGuide": "Play simple, catchy melodies. Use syncopation."
+        },
+        {
+          "instrument": "Sub Bass",
+          "sourceSoundGoal": "Deep, clean sine wave.",
+          "processing": [
+            { "pluginName": "R-Bass", "purpose": "Enhance low end" },
+            { "pluginName": "L1 Limiter", "purpose": "Maximize loudness" }
+          ],
+          "loopGuide": "Follow the root notes of the chords. Keep it simple."
+        }
+      ],
+      "layeringStrategy": "Pluck provides the melody. Bass drives the low end. Drums provide the rhythm.",
+      "mastering": ["Ozone Imager", "L2 Limiter"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 20 }
+        },
+        "hook": {
+          "kick": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 20 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Late Night Vibes",
+      "style": "R&B Trap",
+      "bpm": 120,
+      "description": "Smooth, soulful R&B with trap drums and deep bass.",
+      "artistTypes": ["Bryson Tiller", "Summer Walker", "SZA"],
+      "ingredients": [
+        {
+          "instrument": "Rhodes",
+          "sourceSoundGoal": "Warm, vintage Rhodes piano.",
+          "processing": [
+            { "pluginName": "RC-20 Retro Color", "purpose": "Wobble and noise" },
+            { "pluginName": "ValhallaVintageVerb", "purpose": "Plate reverb" }
+          ],
+          "loopGuide": "Play lush, extended chords (9ths, 11ths). Use rubato."
+        },
+        {
+          "instrument": "Synth Bass",
+          "sourceSoundGoal": "Deep, smooth sine bass.",
+          "processing": [
+            { "pluginName": "R-Bass", "purpose": "Enhance low end" },
+            { "pluginName": "L1 Limiter", "purpose": "Maximize loudness" }
+          ],
+          "loopGuide": "Follow the root notes. Keep it simple and smooth."
+        }
+      ],
+      "layeringStrategy": "Rhodes provides the harmony. Bass provides the low end. Drums provide the rhythm.",
+      "mastering": ["Ozone Imager", "L2 Limiter"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 20 }
+        },
+        "hook": {
+          "kick": [1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+          "snare": { "isClap": true, "steps": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": true, "steps": [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0] },
+          "velocityHumanized": true,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 20 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    },
+    {
+      "title": "Jersey Bounce",
+      "style": "Jersey Club",
+      "bpm": 160,
+      "description": "Fast, energetic club music with a distinctive kick pattern and vocal chops.",
+      "artistTypes": ["Lil Uzi Vert", "Cookiee Kawaii", "Bandmanrill"],
+      "ingredients": [
+        {
+          "instrument": "Vocal Chops",
+          "sourceSoundGoal": "Chopped vocal samples.",
+          "processing": [
+            { "pluginName": "Serato Sample", "purpose": "Chopping" },
+            { "pluginName": "Little AlterBoy", "purpose": "Pitch shifting" }
+          ],
+          "loopGuide": "Chop the vocals rhythmically. Use repetition."
+        },
+        {
+          "instrument": "Kick Drum",
+          "sourceSoundGoal": "Punchy, heavy kick.",
+          "processing": [
+            { "pluginName": "CamelCrusher", "purpose": "Saturation" },
+            { "pluginName": "L1 Limiter", "purpose": "Maximize loudness" }
+          ],
+          "loopGuide": "Play the classic Jersey Club kick pattern (1, 2, 3, 4, 5)."
+        }
+      ],
+      "layeringStrategy": "Kick is the most important element. Vocals provide the melody. Bed squeaks and other FX add texture.",
+      "mastering": ["Soft Clipper", "Maximizer"],
+      "drumPatterns": {
+        "intro": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "verse": {
+          "kick": [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "hook": {
+          "kick": [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "bridge": {
+          "kick": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        },
+        "outro": {
+          "kick": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          "snare": { "isClap": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "hiHat": { "isDoubleTime": false, "steps": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+          "velocityHumanized": false,
+          "swing": { "kick": 0, "snare": 0, "hiHat": 0 }
+        }
+      }
+    }
