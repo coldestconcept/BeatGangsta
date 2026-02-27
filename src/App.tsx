@@ -308,6 +308,11 @@ const App: React.FC = () => {
   const currentAppName = highEyes ? "BeatRetard" : "BeatGangsta";
   const [isSecretUnlocked, setIsSecretUnlocked] = useState(() => localStorage.getItem('bg_hustle_unlocked') === 'true');
   const [showUnlockPopup, setShowUnlockPopup] = useState(false);
+  const [showPasscodeModal, setShowPasscodeModal] = useState(false);
+  const [passcodeInput, setPasscodeInput] = useState('');
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
+  const [tapCount, setTapCount] = useState(0);
+  const [lastTapTime, setLastTapTime] = useState(0);
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [tempUsername, setTempUsername] = useState('');
   
@@ -358,6 +363,32 @@ const App: React.FC = () => {
       setShowSparkles(false);
     }, 4000);
   };
+
+  const handleHighContextMenu = (e: React.MouseEvent) => {
+    if (theme === 'crazy-bird') {
+      e.preventDefault();
+      setContextMenu({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const handlePasscodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passcodeInput === '420420') {
+      setIsSecretUnlocked(true);
+      localStorage.setItem('bg_hustle_unlocked', 'true');
+      setShowPasscodeModal(false);
+      alert("Hustle Mode Activated: Using System API.");
+    } else {
+      alert("Invalid Passcode.");
+    }
+    setPasscodeInput('');
+  };
+
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
 
   useEffect(() => {
     document.title = `${currentAppName} ColdestConcept Edition`;
@@ -969,6 +1000,19 @@ const App: React.FC = () => {
   };
 
   const toggleHighEyes = () => {
+    const now = Date.now();
+    if (now - lastTapTime < 500) {
+      const newCount = tapCount + 1;
+      setTapCount(newCount);
+      if (newCount >= 4) { // 4 more taps after the first one = 5 total
+        setContextMenu({ x: window.innerWidth / 2 - 80, y: window.innerHeight / 2 });
+        setTapCount(0);
+      }
+    } else {
+      setTapCount(0);
+    }
+    setLastTapTime(now);
+
     const nextHigh = !highEyes;
     setHighEyes(nextHigh);
     if (nextHigh) {
@@ -1295,6 +1339,58 @@ const App: React.FC = () => {
         </div>
       )}
 
+      {/* Context Menu */}
+      {contextMenu && (
+        <div 
+          className="fixed z-[1000] bg-zinc-900 border border-white/10 rounded-lg shadow-2xl py-1 min-w-[160px] animate-in fade-in zoom-in duration-200"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <button 
+            onClick={() => setShowPasscodeModal(true)}
+            className="w-full text-left px-4 py-2 text-xs font-black uppercase tracking-widest text-white hover:bg-white/10 transition-colors"
+          >
+            Enter Pass Code
+          </button>
+        </div>
+      )}
+
+      {/* Passcode Modal */}
+      {showPasscodeModal && (
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-zinc-950 border border-white/10 rounded-[2rem] p-8 max-w-sm w-full shadow-2xl">
+            <h3 className="text-xl font-black tracking-tighter text-white mb-2 text-center">RESTRICTED ACCESS</h3>
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-6 text-center">Enter 6-Digit Authorization Code</p>
+            
+            <form onSubmit={handlePasscodeSubmit} className="space-y-4">
+              <input 
+                type="password"
+                maxLength={6}
+                value={passcodeInput}
+                onChange={(e) => setPasscodeInput(e.target.value.replace(/\D/g, ''))}
+                placeholder="••••••"
+                className="w-full bg-black border border-white/10 rounded-xl py-4 text-center text-2xl font-black tracking-[0.5em] text-white focus:outline-none focus:border-red-500 transition-colors"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <button 
+                  type="button"
+                  onClick={() => setShowPasscodeModal(false)}
+                  className="flex-1 py-3 rounded-xl border border-white/10 text-[10px] font-black uppercase tracking-widest text-white/60 hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-red-600 text-[10px] font-black uppercase tracking-widest text-white hover:bg-red-500 transition-colors"
+                >
+                  Verify
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {showUnlockPopup && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/90 backdrop-blur-3xl animate-in fade-in zoom-in duration-700">
            <div className="text-center p-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-[5rem] shadow-[0_0_100px_rgba(234,179,8,0.5)] border-4 border-white/20">
@@ -1522,7 +1618,13 @@ const App: React.FC = () => {
             )}
             {isSecretUnlocked && theme === 'crazy-bird' && (
               <>
-                <button onClick={toggleHighEyes} className={`${mobileTrayBtnClasses} ${highEyes ? 'bg-red-500 text-white border-red-400' : 'bg-black/40 border-white/10 text-slate-400'}`}>👁️ {highEyes ? 'Sober Up' : 'Get High'}</button>
+                <button 
+                  onClick={toggleHighEyes} 
+                  onContextMenu={handleHighContextMenu}
+                  className={`${mobileTrayBtnClasses} ${highEyes ? 'bg-red-500 text-white border-red-400' : 'bg-black/40 border-white/10 text-slate-400'}`}
+                >
+                  👁️ {highEyes ? 'Sober Up' : 'Get High'}
+                </button>
                 <button onClick={handleCigarToggle} className={`${mobileTrayBtnClasses} ${isCigarEquipped ? 'bg-orange-600 text-white border-orange-500' : 'bg-black/40 border-white/10 text-slate-400'}`}>🚬 {isCigarEquipped ? 'Toss Blunt' : 'Got Blunt?'}</button>
               </>
             )}

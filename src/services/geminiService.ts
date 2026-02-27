@@ -3,6 +3,14 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { VSTPlugin, RecommendationResponse, BeatRecipe, RecipeParameters, SavedRecipe } from "../types";
 
 const getAI = () => {
+  const isHustleUnlocked = localStorage.getItem('bg_hustle_unlocked') === 'true';
+  const envKey = process.env.GEMINI_API_KEY;
+  
+  // If hustle mode is unlocked and we have an env key, use it
+  if (isHustleUnlocked && envKey) {
+    return new GoogleGenAI({ apiKey: envKey });
+  }
+
   const apiKey = localStorage.getItem('bg_gemini_api_key');
   if (!apiKey) {
     throw new Error("API_KEY_MISSING");
@@ -121,27 +129,22 @@ export const enrichPluginLibrary = async (
 
   const processBatch = async (batch: VSTPlugin[], retryCount = 0): Promise<VSTPlugin[]> => {
     const prompt = `
-      You are a VST plugin expert. Research the following ${batch.length} plugins and provide a JSON array of objects.
+      Research these ${batch.length} VST plugins. Return a JSON array of objects.
       
-      Plugins to research:
+      Plugins:
       ${batch.map((p, idx) => `${idx + 1}. ${p.vendor} - ${p.name} (v${p.version})`).join('\n')}
 
-      For each plugin, provide:
-      - description: A short, engaging summary (1-2 sentences).
-      - features: An array of 2-3 unique features.
+      For each, provide:
+      - description: 1-2 sentence summary.
+      - features: Array of 2-3 features.
       - category: ONE of: 'Instruments', 'Dynamics', 'Equalizers', 'Reverb & Delay', 'Modulation', 'Distortion & Saturation', 'Utility & Metering', 'Creative FX'.
 
-      INSTRUCTIONS:
-      1. Use your internal knowledge first. 
-      2. ONLY use the googleSearch tool if you are unsure about a plugin's specific category or features.
-      3. If a specific version (e.g. v${batch[0].version}) is hard to find, provide info for the general plugin but note it.
-      4. Return exactly ${batch.length} objects in the same order as the input list.
-      5. If you absolutely cannot find info for a plugin, return an object with category: 'Uncategorized'.
+      Use internal knowledge first. Only search if necessary. Return exactly ${batch.length} objects.
     `;
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-flash-lite-latest",
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
@@ -195,9 +198,9 @@ export const enrichPluginLibrary = async (
     }
   };
 
-  // Process plugins in batches of 5 with a concurrency of 2 batches (10 plugins at a time)
-  // Reduced concurrency and added delay to stay under free tier RPM limits
-  const batchSize = 5;
+  // Process plugins in batches of 8 with a concurrency of 2 batches (16 plugins at a time)
+  // Using gemini-flash-lite-latest which is more efficient for high-volume tasks
+  const batchSize = 8;
   const concurrency = 2;
   const enrichedPlugins: VSTPlugin[] = [];
   
@@ -211,9 +214,8 @@ export const enrichPluginLibrary = async (
     const results = await Promise.all(batches.map(processBatch));
     results.forEach(batchResult => enrichedPlugins.push(...batchResult));
 
-    // Add a small breather between chunks to avoid hitting RPM limits
     if (i + batchSize * concurrency < plugins.length) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
   }
 
