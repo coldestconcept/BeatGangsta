@@ -147,7 +147,6 @@ export const enrichPluginLibrary = async (
         model: "gemini-flash-lite-latest",
         contents: prompt,
         config: {
-          tools: [{ googleSearch: {} }],
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.ARRAY,
