@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Mascot, GrillStyle } from './Mascot';
-import { AppTheme, KnifeStyle, DuragStyle, PendantStyle, ChainStyle } from '../types';
+import { Mascot } from './Mascot';
+import { AppTheme, KnifeStyle, DuragStyle, PendantStyle, ChainStyle, GrillStyle } from '../types';
 
 export interface LogoProps {
   size?: number;
@@ -12,6 +12,7 @@ export interface LogoProps {
   chainStyle: ChainStyle;
   theme: AppTheme;
   saberColor?: string;
+  mascotColor?: string;
   showChain?: boolean;
   highEyes?: boolean;
   isCigarEquipped?: boolean;
@@ -30,6 +31,7 @@ export const Logo: React.FC<LogoProps> = ({
   chainStyle, 
   theme, 
   saberColor, 
+  mascotColor,
   showChain, 
   highEyes, 
   isCigarEquipped, 
@@ -58,6 +60,7 @@ export const Logo: React.FC<LogoProps> = ({
       pendantStyle={pendantStyle}
       chainStyle={chainStyle}
       saberColor={saberColor}
+      mascotColor={mascotColor}
       showChain={showChain}
       highEyes={highEyes}
       isCigarEquipped={isCigarEquipped}

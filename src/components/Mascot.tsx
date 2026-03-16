@@ -1,8 +1,6 @@
 
 import React from 'react';
-import { KnifeStyle, PendantStyle, ChainStyle, DuragStyle } from '../types';
-
-export type GrillStyle = 'iced-out' | 'aquabberry-diamond' | 'gold' | 'opal';
+import { KnifeStyle, PendantStyle, ChainStyle, DuragStyle, GrillStyle } from '../types';
 
 interface MascotProps {
   className?: string;
@@ -14,11 +12,11 @@ interface MascotProps {
   pendantStyle?: PendantStyle;
   chainStyle?: ChainStyle;
   saberColor?: string;
+  mascotColor?: string;
   showChain?: boolean;
   highEyes?: boolean;
   isCigarEquipped?: boolean;
   isTossingCigar?: boolean;
-  showChefHat?: boolean;
 }
 
 const DragonBall = ({ x, y, stars, scale = 1 }: { x: number, y: number, stars: number, scale?: number }) => {
@@ -44,7 +42,7 @@ const DragonBall = ({ x, y, stars, scale = 1 }: { x: number, y: number, stars: n
   );
 };
 
-export const Mascot: React.FC<MascotProps> = ({ 
+export const Mascot: React.FC<MascotProps> = React.memo(({ 
   className = "", 
   size = 48, 
   glowColor = "#3b82f6",
@@ -54,13 +52,13 @@ export const Mascot: React.FC<MascotProps> = ({
   pendantStyle = 'silver',
   chainStyle = 'silver',
   saberColor = '#a855f7', // Default purple
+  mascotColor = '#3b82f6', // Default blue
   showChain = false,
   highEyes = false,
   isCigarEquipped = false,
   isTossingCigar = false,
-  showChefHat = false,
 }) => {
-  const baseHeight = highEyes ? 2500 : 1200;
+  const baseHeight = 1200;
   const height = showChain ? baseHeight + 500 : baseHeight;
   const displayHeight = size * (height / 1000);
 
@@ -76,20 +74,43 @@ export const Mascot: React.FC<MascotProps> = ({
     return 'url(#silverBling)';
   };
 
+  const svgRef = React.useRef<SVGSVGElement>(null);
+  const [dataUrl, setDataUrl] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (svgRef.current) {
+      const svgData = new XMLSerializer().serializeToString(svgRef.current);
+      const encodedData = encodeURIComponent(svgData);
+      setDataUrl(`data:image/svg+xml;charset=utf-8,${encodedData}`);
+    }
+  }, [
+    size, glowColor, grillStyle, knifeStyle, duragStyle, pendantStyle, chainStyle, saberColor, mascotColor, showChain, highEyes, isCigarEquipped, isTossingCigar, height, displayHeight
+  ]);
+
   return (
-    <svg 
-      width={size} 
-      height={displayHeight} 
-      viewBox={`0 0 1000 ${height}`} 
-      fill="none" 
-      xmlns="http://www.w3.org/2000/svg"
-      className={`${className}`}
-      style={{ 
-        filter: `drop-shadow(0 0 ${size * 0.15}px ${glowColor}66)`,
-        transition: 'filter 0.5s ease-in-out, height 0.3s ease-in-out, transform 0.3s ease-in-out',
-        overflow: 'visible' 
-      }}
-    >
+    <div className={`relative ${className}`} style={{ width: size, height: displayHeight }}>
+      {dataUrl && (
+        <img 
+          src={dataUrl} 
+          alt="Mascot" 
+          className="absolute inset-0 w-full h-full z-10 opacity-0 cursor-pointer" 
+          style={{ pointerEvents: 'auto' }}
+        />
+      )}
+      <svg 
+        ref={svgRef}
+        width={size} 
+        height={displayHeight} 
+        viewBox={`0 0 1000 ${height}`} 
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+        className="absolute inset-0 pointer-events-none"
+        style={{ 
+          filter: `drop-shadow(0 0 ${size * 0.15}px ${glowColor}66)`,
+          transition: 'filter 0.5s ease-in-out, height 0.3s ease-in-out, transform 0.3s ease-in-out',
+          overflow: 'visible' 
+        }}
+      >
       <style>
         {`
           @keyframes sparkle {
@@ -240,11 +261,11 @@ export const Mascot: React.FC<MascotProps> = ({
         </linearGradient>
 
         <linearGradient id="roseGoldPendant" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#fda4af" />
-          <stop offset="30%" stopColor="#f43f5e" />
-          <stop offset="50%" stopColor="#fff1f2" />
-          <stop offset="70%" stopColor="#be123c" />
-          <stop offset="100%" stopColor="#9f1239" />
+          <stop offset="0%" stopColor="#e8b5a2" />
+          <stop offset="30%" stopColor="#c88475" />
+          <stop offset="50%" stopColor="#fdf0eb" />
+          <stop offset="70%" stopColor="#a65e4e" />
+          <stop offset="100%" stopColor="#804335" />
         </linearGradient>
 
         <linearGradient id="goldPendantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -253,6 +274,14 @@ export const Mascot: React.FC<MascotProps> = ({
           <stop offset="50%" stopColor="#fef9c3" />
           <stop offset="70%" stopColor="#a16207" />
           <stop offset="100%" stopColor="#854d0e" />
+        </linearGradient>
+
+        <linearGradient id="blueDiamondGrill" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#bfdbfe" />
+          <stop offset="20%" stopColor="#60a5fa" />
+          <stop offset="50%" stopColor="#ffffff" />
+          <stop offset="80%" stopColor="#2563eb" />
+          <stop offset="100%" stopColor="#3b82f6" />
         </linearGradient>
 
         <linearGradient id="aquabberryDiamond" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -326,8 +355,8 @@ export const Mascot: React.FC<MascotProps> = ({
         </linearGradient>
 
         <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={glowColor === '#ef4444' ? '#ff4d4d' : '#3b82f6'} />
-          <stop offset="100%" stopColor={glowColor === '#ef4444' ? '#8b0000' : '#1e40af'} />
+          <stop offset="0%" stopColor={mascotColor} />
+          <stop offset="100%" stopColor={mascotColor} />
         </linearGradient>
 
         <linearGradient id="silkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -343,6 +372,18 @@ export const Mascot: React.FC<MascotProps> = ({
           <stop offset="50%" stopColor="#34d399" />
           <stop offset="70%" stopColor="#059669" />
           <stop offset="100%" stopColor="#064e3b" />
+        </linearGradient>
+
+        <linearGradient id="royalOrangeSilkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#fb923c" />
+          <stop offset="50%" stopColor="#ea580c" />
+          <stop offset="100%" stopColor="#9a3412" />
+        </linearGradient>
+
+        <linearGradient id="royalBlueSilkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="50%" stopColor="#1d4ed8" />
+          <stop offset="100%" stopColor="#1e3a8a" />
         </linearGradient>
 
         <linearGradient id="royalPurpleSilkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -386,6 +427,26 @@ export const Mascot: React.FC<MascotProps> = ({
             fill="none" 
             strokeLinecap="round" 
           />
+          {(chainStyle === 'diamond' || chainStyle === 'blue-diamond') && (
+            <g>
+              <path 
+                d="M280 750 Q280 1050 500 1100 Q720 1050 720 750" 
+                stroke={chainStyle === 'blue-diamond' ? '#3b82f6' : '#ffffff'} 
+                strokeWidth="14" 
+                fill="none" 
+                strokeLinecap="square" 
+                strokeDasharray="0 20"
+              />
+              <path 
+                d="M280 750 Q280 1050 500 1100 Q720 1050 720 750" 
+                stroke={chainStyle === 'blue-diamond' ? '#93c5fd' : '#e2e8f0'} 
+                strokeWidth="6" 
+                fill="none" 
+                strokeLinecap="square" 
+                strokeDasharray="0 20"
+              />
+            </g>
+          )}
           <path 
             d="M280 750 Q280 1050 500 1100 Q720 1050 720 750" 
             stroke="#111" 
@@ -396,6 +457,12 @@ export const Mascot: React.FC<MascotProps> = ({
           />
           <circle cx="500" cy="1100" r="28" fill="#111" opacity="0.3" transform="translate(4, 4)" />
           <circle cx="500" cy="1100" r="24" stroke={getChainStroke()} strokeWidth="12" fill="none" />
+          {(chainStyle === 'diamond' || chainStyle === 'blue-diamond') && (
+            <g>
+              <circle cx="500" cy="1100" r="24" stroke={chainStyle === 'blue-diamond' ? '#3b82f6' : '#ffffff'} strokeWidth="8" fill="none" strokeDasharray="0 12" strokeLinecap="square" />
+              <circle cx="500" cy="1100" r="24" stroke={chainStyle === 'blue-diamond' ? '#93c5fd' : '#e2e8f0'} strokeWidth="4" fill="none" strokeDasharray="0 12" strokeLinecap="square" />
+            </g>
+          )}
           <circle cx="500" cy="1100" r="12" stroke="#111" strokeWidth="2" fill="none" opacity="0.4" />
           
           <g transform="translate(500, 1250)">
@@ -412,6 +479,30 @@ export const Mascot: React.FC<MascotProps> = ({
                 <path d="M50 30 L50 100" />
                 <path d="M-50 100 L0 150 L50 100" />
              </g>
+             {(pendantStyle === 'diamond' || pendantStyle === 'blue-diamond') && (
+               <g>
+                 <g stroke={pendantStyle === 'blue-diamond' ? '#3b82f6' : '#ffffff'} strokeWidth="14" fill="none" strokeLinecap="square" strokeLinejoin="miter" strokeDasharray="0 18">
+                    <path d="M-50 -100 L0 -150 L50 -100" />
+                    <path d="M-50 -100 L-50 -30" />
+                    <path d="M50 -100 L50 -30" />
+                    <path d="M-50 -30 L0 30" />
+                    <path d="M0 -30 L50 30" />
+                    <path d="M-50 30 L-50 100" />
+                    <path d="M50 30 L50 100" />
+                    <path d="M-50 100 L0 150 L50 100" />
+                 </g>
+                 <g stroke={pendantStyle === 'blue-diamond' ? '#93c5fd' : '#e2e8f0'} strokeWidth="6" fill="none" strokeLinecap="square" strokeLinejoin="miter" strokeDasharray="0 18">
+                    <path d="M-50 -100 L0 -150 L50 -100" />
+                    <path d="M-50 -100 L-50 -30" />
+                    <path d="M50 -100 L50 -30" />
+                    <path d="M-50 -30 L0 30" />
+                    <path d="M0 -30 L50 30" />
+                    <path d="M-50 30 L-50 100" />
+                    <path d="M50 30 L50 100" />
+                    <path d="M-50 100 L0 150 L50 100" />
+                 </g>
+               </g>
+             )}
              <circle cx="-50" cy="-100" r="4" fill="white" className="sparkle-dot" />
              <circle cx="50" cy="30" r="5" fill="white" className="sparkle-dot" style={{ animationDelay: '0.5s' }} />
              <circle cx="0" cy="150" r="4" fill="white" className="sparkle-dot" style={{ animationDelay: '1.2s' }} />
@@ -421,8 +512,223 @@ export const Mascot: React.FC<MascotProps> = ({
       )}
 
       <circle cx="500" cy="580" r="360" fill="black" />
-      <circle cx="500" cy="580" r="335" fill={glowColor === '#ef4444' ? '#ff1a1a' : '#1e50ff'} />
+      <circle cx="500" cy="580" r="335" fill={mascotColor} />
       <circle cx="500" cy="580" r="350" stroke="black" strokeWidth="20" fill="none" />
+
+      <g>
+        {duragStyle === 'chef-hat' ? (
+          <g transform="translate(0, -20)">
+             <path 
+               d="M180 440 
+                  L180 340 
+                  C 60 240, 60 80, 280 60
+                  C 350 -70, 650 -70, 720 60
+                  C 940 80, 940 240, 820 340
+                  L820 440 
+                  Q500 400 180 440 Z" 
+               fill="#ffffff" 
+             />
+             <path 
+               d="M180 440 
+                  L180 340 
+                  C 60 240, 60 80, 280 60
+                  C 350 -70, 650 -70, 720 60
+                  C 940 80, 940 240, 820 340
+                  L820 440 
+                  Q500 400 180 440 Z" 
+               stroke="black" strokeWidth="15" fill="none" strokeLinecap="round" strokeLinejoin="round" 
+             />
+             <path 
+               d="M180 340 Q500 300 820 340" 
+               stroke="black" strokeWidth="10" fill="none" opacity="0.6" strokeLinecap="round"
+             />
+             <g stroke="black" strokeWidth="4" opacity="0.2" fill="none" strokeLinecap="round">
+               <path d="M300 80 Q320 220 350 330" />
+               <path d="M500 65 Q510 210 500 315" />
+               <path d="M700 80 Q680 220 650 330" />
+               <path d="M220 330 Q250 310 280 340" />
+               <path d="M780 330 Q750 310 720 340" />
+             </g>
+             <path d="M195 425 Q500 395 805 425" stroke="black" strokeWidth="2" opacity="0.1" fill="none" />
+          </g>
+        ) : duragStyle === 'sound-ninja' ? (
+          <g>
+            {/* Back/Main Hair Volume Fill */}
+            <path 
+              d="M 220 300
+                 C 250 120, 750 120, 780 300
+                 Q 500 250 220 300 Z"
+              fill="#fef9c3"
+            />
+            
+            {/* Sleek Hair Shine (Anime Style Halo) */}
+            <path 
+              d="M 280 240 
+                 L 320 210 L 350 225 
+                 L 420 190 L 460 205 
+                 L 500 180 L 540 205 
+                 L 600 190 L 650 225 
+                 L 680 210 L 720 240
+                 L 680 225 L 650 240 
+                 L 600 210 L 540 225 
+                 L 500 200 L 460 225 
+                 L 420 210 L 350 240 
+                 L 320 225 Z"
+              fill="#ffffff" opacity="0.8"
+            />
+
+            {/* Sleek Hair Strand Lines (Headband to Shine) */}
+            <path d="M 320 290 Q 325 265 330 235" stroke="black" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d="M 400 275 Q 405 250 410 215" stroke="black" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d="M 480 260 Q 482 235 485 205" stroke="black" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d="M 560 260 Q 558 235 555 205" stroke="black" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d="M 640 275 Q 635 250 630 215" stroke="black" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <path d="M 700 290 Q 695 265 690 235" stroke="black" strokeWidth="4" fill="none" strokeLinecap="round" />
+
+            {/* Back/Main Hair Volume Stroke (Layered on top) */}
+            <path 
+              d="M 220 300
+                 C 250 120, 750 120, 780 300
+                 Q 500 250 220 300 Z"
+              fill="none" stroke="black" strokeWidth="20" strokeLinejoin="round" 
+            />
+            
+            {/* Front Bangs (Wavy) */}
+            <path 
+              d="M 165 480
+                 Q 200 550 250 570
+                 Q 280 490 320 510
+                 Q 350 610 420 630
+                 Q 450 540 480 570
+                 Q 520 650 580 610
+                 Q 600 540 640 570
+                 Q 680 590 720 540
+                 Q 780 550 835 480
+                 Q 500 430 165 480
+                 Z"
+              fill="#fef9c3" stroke="black" strokeWidth="20" strokeLinejoin="round" 
+            />
+            
+            {/* Bangs Texture Lines */}
+            <path d="M 220 490 Q 240 530 240 550" stroke="black" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <path d="M 300 490 Q 310 510 310 500" stroke="black" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <path d="M 380 490 Q 400 570 410 610" stroke="black" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <path d="M 460 490 Q 470 530 470 550" stroke="black" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <path d="M 540 490 Q 560 570 570 590" stroke="black" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <path d="M 620 490 Q 630 530 630 550" stroke="black" strokeWidth="6" fill="none" strokeLinecap="round" />
+            <path d="M 700 490 Q 710 520 710 530" stroke="black" strokeWidth="6" fill="none" strokeLinecap="round" />
+            
+            {/* Headband Fabric (Blue) */}
+            <path d="M 165 480 A 350 350 0 0 1 220 300 Q 500 250 780 300 A 350 350 0 0 1 835 480 Q 500 430 165 480 Z" fill="#1e3a8a" stroke="black" strokeWidth="20" strokeLinejoin="round" />
+            <path d="M 165 480 A 350 350 0 0 1 220 300 Q 500 250 780 300 A 350 350 0 0 1 835 480 Q 500 430 165 480 Z" fill="none" stroke="white" strokeWidth="2" opacity="0.2" />
+            
+            {/* Headband Tails/Knots */}
+            <path d="M 820 420 Q 940 460 910 590 Q 860 520 820 460 Z" fill="#1e3a8a" stroke="black" strokeWidth="8" strokeLinejoin="round" />
+            <path d="M 830 440 Q 980 490 940 640 Q 880 540 810 480 Z" fill="#1e3a8a" stroke="black" strokeWidth="8" strokeLinejoin="round" />
+            
+            {/* Headband Metal Plate */}
+            <path d="M 260 310 Q 500 270 740 310 L 710 450 Q 500 410 290 450 Z" fill="url(#silverBling)" stroke="black" strokeWidth="10" strokeLinejoin="round" />
+            
+            {/* Rivets on Plate */}
+            <circle cx="290" cy="335" r="6" fill="#333" />
+            <circle cx="315" cy="425" r="6" fill="#333" />
+            <circle cx="710" cy="335" r="6" fill="#333" />
+            <circle cx="685" cy="425" r="6" fill="#333" />
+            
+            {/* Sound Note Symbol */}
+            <g transform="translate(500, 360) scale(4.5)">
+              <circle cx="-4" cy="4" r="5" fill="#333" />
+              <rect x="-1" y="-12" width="4" height="16" fill="#333" />
+              <path d="M 3 -12 L 14 -6 L 14 -1 L 3 -7 Z" fill="#333" />
+            </g>
+          </g>
+        ) : duragStyle === 'standard' || duragStyle === 'royal-green' || duragStyle.startsWith('dragonball-') ? (
+          <g>
+            {(() => {
+              const dFill = duragStyle === 'royal-green' ? 'url(#royalGreenSilkGrad)' : duragStyle === 'dragonball-purple' ? 'url(#royalPurpleSilkGrad)' : 'url(#silkGrad)';
+              const isDragonball = duragStyle.startsWith('dragonball-');
+              return (
+                <>
+                  {/* BASE BLACK LAYER (OUTLINE) */}
+                  <path d="M150 460 C140 190 400 60 500 60 C600 60 860 190 850 460 L150 460 Z" fill="black" />
+                  
+                  {/* INNER SILK FABRIC */}
+                  <path d="M170 450 C165 220 410 100 500 100 C590 100 835 220 830 450 Z" fill={dFill} />
+                  
+                  {/* DRAGONBALL PRINT LAYER (CLIPPED TO SILK AREA ONLY) */}
+                  {isDragonball && (
+                    <g clipPath="url(#ragSilkClip)">
+                      <DragonBall x={300} y={200} stars={5} scale={1.6} />
+                      <DragonBall x={500} y={250} stars={3} scale={1.8} />
+                      <DragonBall x={700} y={200} stars={1} scale={1.4} />
+                      <DragonBall x={400} y={400} stars={1} scale={1.2} />
+                      <DragonBall x={600} y={400} stars={5} scale={1.4} />
+                    </g>
+                  )}
+
+                  {/* SEAM LINES & FOREHEAD BAND */}
+                  <path d="M500 100 Q520 270 500 450" stroke="black" strokeWidth="12" strokeLinecap="round" opacity="0.8" fill="none" />
+                  <path d="M500 100 Q520 270 500 450" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.2" fill="none" />
+                  
+                  <path d="M155 400 Q500 360 845 400 L845 460 Q500 420 155 460 Z" fill="black" />
+                  <path d="M170 415 Q500 380 830 415 L830 445 Q500 410 170 445 Z" fill={duragStyle === 'royal-green' ? '#064e3b' : duragStyle === 'dragonball-purple' ? '#4c1d95' : '#333'} opacity={duragStyle === 'royal-green' ? 0.9 : 1} />
+                  
+                  {/* TAILS AREA */}
+                  <path d="M840 420 Q950 490 900 690 L850 660 Q880 520 800 420 Z" fill="black" />
+                  <path d="M825 420 Q930 480 885 670 L845 645 Q865 510 790 420 Z" fill={dFill} />
+                  
+                  {/* TAIL PRINT (CLIPPED) */}
+                  {isDragonball && (
+                    <g clipPath="url(#ragTailClip)">
+                      <DragonBall x={875} y={550} stars={3} scale={1.0} />
+                    </g>
+                  )}
+                </>
+              );
+            })()}
+            <path d="M300 190 Q400 140 450 160" stroke="white" strokeWidth="4" opacity="0.1" fill="none" />
+            <path d="M600 190 Q700 240 750 290" stroke="white" strokeWidth="6" opacity="0.1" fill="none" />
+          </g>
+        ) : (
+          <g>
+             {/* Base Fill Layer - Solid black background to fill any gaps */}
+             <path 
+               d="M150 460 C140 160 400 30 500 30 C600 30 860 160 850 460 Z" 
+               fill="black" 
+             />
+             
+             {/* Colored Sections */}
+             <path d="M185 320 C180 160 400 30 500 30 C600 30 820 160 815 320 Q500 280 185 320 Z" fill="url(#rastaRed)" />
+             <path d="M165 400 Q500 360 835 400 L815 320 Q500 280 185 320 Z" fill="url(#rastaYellow)" />
+             <path d="M150 460 Q500 420 850 460 L835 400 Q500 360 165 400 Z" fill="url(#rastaGreen)" />
+             
+             {/* Master Outline Layer - Drawn ON TOP of colors for a crisp edge */}
+             <path 
+               d="M150 460 C140 160 400 30 500 30 C600 30 860 160 850 460 Z" 
+               fill="none" 
+               stroke="black" 
+               strokeWidth="16" 
+               strokeLinejoin="round" 
+             />
+             
+             {/* Internal Seam Lines - Drawn on top for definition */}
+             <g stroke="black" strokeWidth="4" opacity="0.4" fill="none" strokeLinecap="round">
+                <path d="M185 320 Q500 280 815 320" />
+                <path d="M165 400 Q500 360 835 400" />
+             </g>
+
+             {/* Texture & Detail */}
+             <g stroke="black" strokeWidth="2" opacity="0.2" fill="none" strokeLinecap="round">
+                <path d="M500 30 Q515 250 500 440" />
+                <path d="M350 120 Q370 250 380 410" />
+                <path d="M650 120 Q630 250 620 410" />
+             </g>
+             
+             {/* Subtle Shine */}
+             <path d="M170 410 Q500 375 830 410" stroke="white" strokeWidth="2" opacity="0.1" fill="none" />
+          </g>
+        )}
+      </g>
 
       <g>
         {!highEyes ? (
@@ -443,7 +749,7 @@ export const Mascot: React.FC<MascotProps> = ({
                 <path d="M400 540 Q390 560 380 545" />
               </g>
               <circle cx="385" cy="585" r="22" fill="black" className="high-pupil" />
-              <rect x="340" y="475" width="90" height="85" fill="#1e50ff" stroke="black" strokeWidth="20" />
+              <rect x="340" y="475" width="90" height="85" fill={mascotColor} stroke="black" strokeWidth="20" />
             </g>
             <ellipse cx="385" cy="580" rx="45" ry="75" fill="none" stroke="#000" strokeWidth="20" />
             <g clipPath="url(#eyeClipRight)">
@@ -454,16 +760,16 @@ export const Mascot: React.FC<MascotProps> = ({
                 <path d="M600 620 Q615 610 630 630" />
               </g>
               <circle cx="615" cy="585" r="22" fill="black" className="high-pupil" />
-              <rect x="570" y="475" width="90" height="85" fill="#1e50ff" stroke="black" strokeWidth="20" />
+              <rect x="570" y="475" width="90" height="85" fill={mascotColor} stroke="black" strokeWidth="20" />
             </g>
              <ellipse cx="615" cy="580" rx="45" ry="75" fill="none" stroke="#000" strokeWidth="20" />
           </g>
         )}
 
-        <g opacity="0.3">
-          <circle cx="760" cy="560" r="10" fill="white" />
-          <circle cx="785" cy="585" r="14" fill="white" />
-          <circle cx="765" cy="610" r="10" fill="white" />
+        <g opacity="0.5">
+          <circle cx="760" cy="560" r="10" fill={mascotColor} filter="brightness(1.5)" />
+          <circle cx="785" cy="585" r="14" fill={mascotColor} filter="brightness(1.5)" />
+          <circle cx="765" cy="610" r="10" fill={mascotColor} filter="brightness(1.5)" />
         </g>
 
         <g transform="translate(305, 710)">
@@ -475,14 +781,30 @@ export const Mascot: React.FC<MascotProps> = ({
               let strokeColor = "#333";
               let showFacets = true;
               let showGoldDetail = false;
+              let isPrincessCut = false;
 
               if (grillStyle === 'aquabberry-diamond') {
                 fill = "url(#aquabberryDiamond)";
                 strokeColor = "#0f766e";
                 showFacets = true;
+              } else if (grillStyle === 'blue-diamond') {
+                fill = "url(#blueDiamondGrill)";
+                strokeColor = "#1e3a8a";
+                showFacets = true;
+                isPrincessCut = true;
+              } else if (grillStyle === 'diamond') {
+                fill = "url(#diamondFacet)";
+                strokeColor = "#333";
+                showFacets = true;
+                isPrincessCut = true;
               } else if (grillStyle === 'gold') {
                 fill = "url(#goldGrill)";
                 strokeColor = "#854d0e";
+                showFacets = false;
+                showGoldDetail = true;
+              } else if (grillStyle === 'rose-gold') {
+                fill = "url(#roseGoldPendant)";
+                strokeColor = "#804335";
                 showFacets = false;
                 showGoldDetail = true;
               } else if (grillStyle === 'opal') {
@@ -494,7 +816,7 @@ export const Mascot: React.FC<MascotProps> = ({
               return (
                 <g key={i} transform={`translate(${x}, ${15 + yOff}) rotate(${tilt})`}>
                   <rect width="50" height="60" rx="4" fill={fill} stroke={strokeColor} strokeWidth="2" />
-                  {showFacets && (
+                  {showFacets && !isPrincessCut && (
                     <>
                       <path d="M0 0 L50 60 M50 0 L0 60" stroke="white" strokeWidth="1" opacity="0.3" />
                       <path d="M25 0 L25 60 M0 30 L50 30" stroke="white" strokeWidth="1" opacity="0.2" />
@@ -502,10 +824,19 @@ export const Mascot: React.FC<MascotProps> = ({
                       <circle cx="40" cy="50" r="1.5" fill="white" className="sparkle-dot" style={{ animationDelay: `${i * 0.5}s` }} />
                     </>
                   )}
-                  {showGoldDetail && (
-                    <path d="M5 10 L45 10 M5 30 L45 30" stroke="#854d0e" strokeWidth="1" opacity="0.4" />
+                  {showFacets && isPrincessCut && (
+                    <>
+                      <rect x="5" y="5" width="40" height="50" fill="none" stroke="white" strokeWidth="1" opacity="0.4" />
+                      <rect x="12" y="12" width="26" height="36" fill="none" stroke="white" strokeWidth="1" opacity="0.6" />
+                      <path d="M0 0 L12 12 M50 0 L38 12 M0 60 L12 48 M50 60 L38 48" stroke="white" strokeWidth="1" opacity="0.4" />
+                      <circle cx="25" cy="30" r="2" fill="white" className="sparkle-dot" style={{ animationDelay: `${i * 0.3}s` }} />
+                      <circle cx="10" cy="10" r="1.5" fill="white" className="sparkle-dot" style={{ animationDelay: `${i * 0.5}s` }} />
+                    </>
                   )}
-                  <rect x="5" y="5" width="40" height="15" fill="white" opacity={grillStyle === 'gold' ? 0.2 : 0.4} rx="2" />
+                  {showGoldDetail && (
+                    <path d="M5 10 L45 10 M5 30 L45 30" stroke={strokeColor} strokeWidth="1" opacity="0.4" />
+                  )}
+                  <rect x="5" y="5" width="40" height="15" fill="white" opacity={(grillStyle === 'gold' || grillStyle === 'rose-gold') ? 0.2 : 0.4} rx="2" />
                 </g>
               );
             })}
@@ -538,7 +869,7 @@ export const Mascot: React.FC<MascotProps> = ({
           )}
 
           <g transform="translate(-80, 0)">
-              <ellipse cx="20" cy="-15" rx="25" ry="15" fill="#1e50ff" stroke="black" strokeWidth="2" transform="rotate(-15)" />
+              <ellipse cx="20" cy="-15" rx="25" ry="15" fill={mascotColor} stroke="black" strokeWidth="2" transform="rotate(-15)" />
               {[0, 25, 50, 75].map((xOffset) => (
                   <rect key={xOffset} x={xOffset} y="-25" width="22" height="50" rx="10" fill="url(#skinGrad)" stroke="black" strokeWidth="2" />
               ))}
@@ -610,7 +941,7 @@ export const Mascot: React.FC<MascotProps> = ({
         </g>
       )}
 
-      <g style={{ opacity: knifeStyle === 'samuels-saber' ? 1 : 0, pointerEvents: knifeStyle === 'samuels-saber' ? 'auto' : 'none' }}>
+      <g style={{ opacity: (knifeStyle === 'samuels-saber' || knifeStyle === 'dark-saber') ? 1 : 0, pointerEvents: (knifeStyle === 'samuels-saber' || knifeStyle === 'dark-saber') ? 'auto' : 'none' }}>
         <g transform="translate(130, 780)">
           <g>
             {[ -45, -15 ].map((yOffset) => (
@@ -627,115 +958,27 @@ export const Mascot: React.FC<MascotProps> = ({
             <rect x="-25" y="-140" width="50" height="30" rx="4" fill="#333" stroke="black" strokeWidth="3" />
           </g>
           <g>
-            <ellipse cx="25" cy="-20" rx="28" ry="18" fill="#1e50ff" stroke="black" strokeWidth="3" transform="rotate(25)" />
+            <ellipse cx="25" cy="-20" rx="28" ry="18" fill={mascotColor} stroke="black" strokeWidth="3" transform="rotate(25)" />
             {[ 15, 45 ].map((yOffset) => (
                 <rect key={yOffset} x="-35" y={yOffset} width="70" height="25" rx="12" fill="url(#skinGrad)" stroke="black" strokeWidth="3" />
             ))}
           </g>
           <g transform="translate(0, -140)">
-            <rect x="-25" y="-600" width="50" height="600" rx="25" fill={saberColor} opacity="0.6" className="saber-blade" style={{ filter: 'blur(20px)' }} />
-            <rect x="-18" y="-590" width="36" height="590" rx="18" fill={saberColor} opacity="0.8" className="saber-blade" style={{ filter: 'blur(8px)' }} />
-            <rect x="-10" y="-580" width="20" height="580" rx="10" fill="url(#saberCore)" className="saber-blade" />
+            {knifeStyle === 'dark-saber' ? (
+              <>
+                <rect x="-25" y="-600" width="50" height="600" rx="25" fill="white" opacity="0.6" className="saber-blade" style={{ filter: 'blur(20px)' }} />
+                <rect x="-18" y="-590" width="36" height="590" rx="18" fill="white" opacity="0.8" className="saber-blade" style={{ filter: 'blur(8px)' }} />
+                <rect x="-10" y="-580" width="20" height="580" rx="10" fill="black" className="saber-blade" />
+              </>
+            ) : (
+              <>
+                <rect x="-25" y="-600" width="50" height="600" rx="25" fill={saberColor} opacity="0.6" className="saber-blade" style={{ filter: 'blur(20px)' }} />
+                <rect x="-18" y="-590" width="36" height="590" rx="18" fill={saberColor} opacity="0.8" className="saber-blade" style={{ filter: 'blur(8px)' }} />
+                <rect x="-10" y="-580" width="20" height="580" rx="10" fill="url(#saberCore)" className="saber-blade" />
+              </>
+            )}
           </g>
         </g>
-      </g>
-
-      <g>
-        {showChefHat ? (
-          <g transform="translate(0, -20)">
-             <path 
-               d="M180 440 
-                  L180 340 
-                  C 60 240, 60 80, 280 60
-                  C 350 -70, 650 -70, 720 60
-                  C 940 80, 940 240, 820 340
-                  L820 440 
-                  Q500 400 180 440 Z" 
-               fill="#ffffff" 
-             />
-             <path 
-               d="M180 440 
-                  L180 340 
-                  C 60 240, 60 80, 280 60
-                  C 350 -70, 650 -70, 720 60
-                  C 940 80, 940 240, 820 340
-                  L820 440 
-                  Q500 400 180 440 Z" 
-               stroke="black" strokeWidth="15" fill="none" strokeLinecap="round" strokeLinejoin="round" 
-             />
-             <path 
-               d="M180 340 Q500 300 820 340" 
-               stroke="black" strokeWidth="10" fill="none" opacity="0.6" strokeLinecap="round"
-             />
-             <g stroke="black" strokeWidth="4" opacity="0.2" fill="none" strokeLinecap="round">
-               <path d="M300 80 Q320 220 350 330" />
-               <path d="M500 65 Q510 210 500 315" />
-               <path d="M700 80 Q680 220 650 330" />
-               <path d="M220 330 Q250 310 280 340" />
-               <path d="M780 330 Q750 310 720 340" />
-             </g>
-             <path d="M195 425 Q500 395 805 425" stroke="black" strokeWidth="2" opacity="0.1" fill="none" />
-          </g>
-        ) : !highEyes ? (
-          <g>
-            {(() => {
-              const dFill = duragStyle === 'royal-green' ? 'url(#royalGreenSilkGrad)' : duragStyle === 'dragonball-purple' ? 'url(#royalPurpleSilkGrad)' : 'url(#silkGrad)';
-              return (
-                <>
-                  {/* BASE BLACK LAYER (OUTLINE) */}
-                  <path d="M150 460 C140 190 400 60 500 60 C600 60 860 190 850 460 L150 460 Z" fill="black" />
-                  
-                  {/* INNER SILK FABRIC */}
-                  <path d="M170 450 C165 220 410 100 500 100 C590 100 835 220 830 450 Z" fill={dFill} />
-                  
-                  {/* DRAGONBALL PRINT LAYER (CLIPPED TO SILK AREA ONLY) */}
-                  {duragStyle === 'dragonball-purple' && (
-                    <g clipPath="url(#ragSilkClip)">
-                      <DragonBall x={300} y={200} stars={5} scale={1.6} />
-                      <DragonBall x={500} y={250} stars={3} scale={1.8} />
-                      <DragonBall x={700} y={200} stars={1} scale={1.4} />
-                      <DragonBall x={400} y={400} stars={1} scale={1.2} />
-                      <DragonBall x={600} y={400} stars={5} scale={1.4} />
-                    </g>
-                  )}
-
-                  {/* SEAM LINES & FOREHEAD BAND */}
-                  <path d="M500 100 Q520 270 500 450" stroke="black" strokeWidth="12" strokeLinecap="round" opacity="0.8" fill="none" />
-                  <path d="M500 100 Q520 270 500 450" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.2" fill="none" />
-                  
-                  <path d="M155 400 Q500 360 845 400 L845 460 Q500 420 155 460 Z" fill="black" />
-                  <path d="M170 415 Q500 380 830 415 L830 445 Q500 410 170 445 Z" fill={duragStyle === 'royal-green' ? '#064e3b' : duragStyle === 'dragonball-purple' ? '#4c1d95' : '#333'} opacity={duragStyle === 'royal-green' ? 0.9 : 1} />
-                  
-                  {/* TAILS AREA */}
-                  <path d="M840 420 Q950 490 900 690 L850 660 Q880 520 800 420 Z" fill="black" />
-                  <path d="M825 420 Q930 480 885 670 L845 645 Q865 510 790 420 Z" fill={dFill} />
-                  
-                  {/* TAIL PRINT (CLIPPED) */}
-                  {duragStyle === 'dragonball-purple' && (
-                    <g clipPath="url(#ragTailClip)">
-                      <DragonBall x={875} y={550} stars={3} scale={1.0} />
-                    </g>
-                  )}
-                </>
-              );
-            })()}
-            <path d="M300 190 Q400 140 450 160" stroke="white" strokeWidth="4" opacity="0.1" fill="none" />
-            <path d="M600 190 Q700 240 750 290" stroke="white" strokeWidth="6" opacity="0.1" fill="none" />
-          </g>
-        ) : (
-          <g>
-             <path d="M150 460 C140 160 400 30 500 30 C600 30 860 160 850 460 Z" fill="black" />
-             <path d="M185 320 C180 180 400 60 500 60 C600 60 820 180 815 320 Q500 280 185 320 Z" fill="url(#rastaRed)" stroke="black" strokeWidth="4" />
-             <path d="M165 400 Q500 360 835 400 L815 320 Q500 280 185 320 Z" fill="url(#rastaYellow)" stroke="black" strokeWidth="4" />
-             <path d="M150 460 Q500 420 850 460 L835 400 Q500 360 165 400 Z" fill="url(#rastaGreen)" stroke="black" strokeWidth="4" />
-             <g stroke="black" strokeWidth="2" opacity="0.3" fill="none">
-                <path d="M500 60 Q515 250 500 440" />
-                <path d="M350 120 Q370 250 380 410" />
-                <path d="M650 120 Q630 250 620 410" />
-             </g>
-             <path d="M170 410 Q500 375 830 410" stroke="white" strokeWidth="2" opacity="0.2" fill="none" />
-          </g>
-        )}
       </g>
 
       {highEyes && (
@@ -750,5 +993,6 @@ export const Mascot: React.FC<MascotProps> = ({
         </g>
       )}
     </svg>
+    </div>
   );
-};
+});

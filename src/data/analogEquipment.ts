@@ -13,7 +13,7 @@ export const analogInstruments = {
   },
   "Pianos, Keyboards and Synths": {
     "Korg": ["Minilogue XD", "Minilogue", "Monologue", "Prologue", "Kronos", "Nautilus", "MS-20", "M1", "Triton", "SV-2", "Grandstage", "Krome", "MicroKorg", "Wavestate", "Opsix", "Modwave", "KingKORG", "Polysix", "Mono/Poly", "CX-3", "ARP Odyssey"],
-    "Behringer": ["TD-3"],
+    "Behringer": ["TD-3", "Wave", "MS-5"],
     "UNO": ["Synth"],
     "Moog": ["Minimoog Model D", "Sub 37", "Subsequent 37", "Matriarch", "Grandmother", "Voyager", "Little Phatty", "Mother-32", "DFAM", "Subharmonicon", "One", "Memorymoog", "Polymoog", "Prodigy", "Rogue", "Taurus", "Sirin", "Minitaur", "Werkstatt-01", "Mavis"],
     "Yamaha": ["DX7", "Motif", "Montage", "MODX", "CP88", "YC61", "Reface CS", "Reface DX", "Reface CP", "Reface YC", "CS-80", "SY77", "AN1x", "V50", "P-515", "Clavinova", "AvantGrand", "Genos", "Tyros", "PSR-S975"],
@@ -35,26 +35,56 @@ export const analogInstruments = {
     "Yamaha": ["BB Series", "TRBX Series", "TRB Series", "RBX Series", "Attitude Limited", "Motion Bass", "SBV", "Broadbass", "SLB", "Silent Bass"],
     "Gibson": ["Thunderbird", "EB-0", "EB-3", "SG Bass", "Ripper", "Grabber", "G3", "Les Paul Bass", "Midtown Bass", "Non-Reverse Thunderbird"],
     "Dingwall": ["Combustion", "NG2", "NG3", "Z Series", "Super J", "Super P", "Afterburner", "D-Roc", "Prima", "Lee Sklar Signature"],
-    "Hofner": ["Violin Bass", "Club Bass", "President Bass", "Verythin Bass", "Senator Bass", "Colorama Bass", "Galaxie Bass", "Shorty Bass", "Ignition Bass", "Contemporary Bass"]
+    "Hofner": ["Violin Bass", "Club Bass", "President Bass", "Verythin Bass", "Senator Bass", "Colorama Bass", "Galaxie Bass", "Shorty Bass", "Ignition Bass", "Contemporary Bass"],
+    "Harley Benton": ["PJ-5 HTR", "JB-75", "PB-20", "B-450", "Enhanced MP-4MN"],
+    "Cort": ["Action Series", "Artisan Series", "GB Series", "C4 Plus", "B4 Element"],
+    "Washburn": ["T24", "T25", "Sonamaster", "Bantam Series"],
+    "Sterling by Music Man": ["Ray34", "Ray4", "Ray5", "StingRay Short Scale", "S.U.B. Ray4", "Majesty Bass"]
   },
   "Guitars": {
     "Fender": ["Squier Paranormal Jazzmaster", "Squier Stratocaster", "Squier Telecaster", "Stratocaster", "Telecaster", "Jazzmaster", "Jaguar", "Mustang", "Duo-Sonic", "Toronado", "Cyclone", "Meteora", "Lead"],
-    "Gibson": ["Les Paul", "SG", "ES-335", "Flying V", "Explorer", "Firebird", "ES-175", "L-5", "J-45", "Hummingbird"],
+    "Gibson": ["Les Paul", "SG", "SG 61", "ES-335", "Flying V", "Explorer", "Firebird", "ES-175", "L-5", "J-45", "Hummingbird"],
     "Ibanez": ["RG Series", "S Series", "AZ Series", "JEM", "Universe", "Artcore", "Talman", "Iceman", "Destroyer", "Q Series"],
     "PRS": ["Custom 24", "Custom 22", "McCarty", "Silver Sky", "CE 24", "S2 Standard", "SE Custom", "Hollowbody II", "Tremonti", "Santana"],
-    "Epiphone": ["Casino", "Sheraton", "Riviera", "Dot", "Les Paul Standard", "SG Standard", "Coronet", "Wilshire", "Crestwood", "Texan"],
+    "Epiphone": ["Casino", "Sheraton", "Riviera", "Dot", "Les Paul Standard", "SG Standard", "Flying V 70s", "Coronet", "Wilshire", "Crestwood", "Texan", "EJ-200", "Hummingbird Pro"],
     "Jackson": ["Soloist", "Dinky", "Rhoads", "Kelly", "King V", "Warrior", "Monarkh", "Dominion", "Juggernaut", "Shadowcaster"],
     "ESP": ["LTD ESP EX-50", "Eclipse", "Horizon", "Viper", "M Series", "Arrow", "Snapper", "Mystique", "Stream", "EX Series", "LTD EC-1000"],
     "Schecter": ["Hellraiser", "Omen", "Demon", "Reaper", "Sun Valley Super Shredder", "PT", "Solo-II", "Corsair", "Banshee", "Nick Johnston Traditional"],
     "Gretsch": ["White Falcon", "Country Gentleman", "Duo Jet", "Tennessee Rose", "Electromatic", "Streamliner", "Penguin", "Anniversary", "Corvette", "Rancher"],
     "Martin": ["D-28", "D-18", "000-28", "OM-28", "HD-28", "00-15M", "LX1E Little Martin", "D-35", "D-45", "CEO-7"],
     "Alhambra": ["7FC (flamenco guitar)"],
-    "Yamaha": ["C40"]
+    "Yamaha": ["C40", "FG800", "FG830", "LL16", "A3R", "Pacifica 112V", "Revstar Element"],
+    "Harley Benton": ["CST-24HB", "TE-52", "SC-450", "HB-35Plus"],
+    "Taylor": ["114ce", "214ce", "GS Mini", "314ce", "814ce", "Academy 10", "Baby Taylor"],
+    "Takamine": ["G Series", "P3DC", "EF341SC", "GD11MCE", "GN93CE"],
+    "Seagull": ["S6 Original", "Entourage", "Coastline", "Maritime SWS"],
+    "Washburn": ["WD10", "Heritage Series", "Comfort Series", "Oscar Schmidt OG2"],
+    "Cort": ["Earth Series", "G Series", "CR Series", "X Series", "Jade Series"],
+    "Godin": ["Multiac", "5th Avenue", "LGX-SA", "Session HT"]
+  },
+  "Ukuleles": {
+    "Kala": ["KA-15S (Soprano)", "KA-C (Concert)", "KA-T (Tenor)", "U-Bass", "Waterman"],
+    "Cordoba": ["15CM (Concert)", "20TM (Tenor)", "28T (Tenor)", "15SM (Soprano)"],
+    "Lanikai": ["LU-21 (Soprano)", "QM-BLC (Concert)", "FB-CEL (Electric Tenor)"],
+    "Fender": ["Venice (Soprano)", "Zuma (Concert)", "Rincon (Tenor)", "Fullerton Tele Uke"],
+    "Ibanez": ["UKS10 (Soprano)", "UKC10 (Concert)", "UEW15E (Electric Tenor)"],
+    "Luna": ["Tattoo Concert", "High Tide Tenor"]
+  },
+  "Wind Instruments": {
+    "Yamaha": ["YAS-280 (Alto Sax)", "YTS-280 (Tenor Sax)", "YTR-2330 (Trumpet)", "YFL-222 (Flute)", "YCL-255 (Clarinet)", "YSL-354 (Trombone)"],
+    "Selmer": ["Series II (Alto Sax)", "Series III (Tenor Sax)", "Bundy (Clarinet)", "La Voix II"],
+    "Bach": ["Stradivarius 180S37 (Trumpet)", "TR300H2 (Trumpet)", "Aristocrat (Trumpet)"],
+    "Jupiter": ["JAS700 (Alto Sax)", "JTR700 (Trumpet)", "JFL700 (Flute)", "JCL700 (Clarinet)"],
+    "Yanagisawa": ["A-WO1 (Alto Sax)", "T-WO1 (Tenor Sax)", "S-WO1 (Soprano Sax)"],
+    "Buffet Crampon": ["R13 (Clarinet)", "E11 (Clarinet)", "Prodige (Clarinet)"],
+    "Gemeinhardt": ["2NP (Flute)", "3B (Flute)"]
   }
 };
 
 export const analogHardware = {
   "Compressors": {
+    "Klark Teknik": ["2A-kt", "76-kt"],
+    "Behringer": ["369-kt"],
     "Warm Audio": ["WA76-D"],
     "Heritage Audio": ["Grandchild"],
     "Universal Audio": ["Teletronix LA-2A", "1176LN", "175B", "176", "LA-3A", "Fairchild 670", "dbx 160"],
@@ -69,6 +99,7 @@ export const analogHardware = {
     "Retro Instruments": ["176", "Sta-Level", "Revolver"]
   },
   "Equalizers": {
+    "Warm Audio": ["EQP-WA GainMod"],
     "Pultec": ["EQP-1A", "MEQ-5", "EQH-2"],
     "Neve": ["1073", "1081", "1084", "31102", "Portico 5033"],
     "SSL": ["E Series EQ", "G Series EQ", "Fusion", "X-Rack EQ"],
@@ -81,6 +112,7 @@ export const analogHardware = {
     "Dangerous Music": ["BAX EQ"]
   },
   "Preamps": {
+    "DBX": ["286 S"],
     "Heritage Audio": ["73 JR II"],
     "Warm Audio": ["WA-412", "WA73", "WA12", "TB12"],
     "Neve": ["1073", "1081", "1084", "1073DPX", "Portico 5012"],
@@ -131,12 +163,15 @@ export const analogHardware = {
   },
   "Guitar Pedals": {
     "Electro-Harmonix": ["Big Muff", "Small Clone"],
-    "Boss": ["RV-6", "GE-7"],
+    "Boss": ["RV-6", "GE-7", "CS-3 Compression Sustainer"],
     "NIG": ["Detune Chorus"],
-    "MXR": ["Phase 90"],
+    "MXR": ["Phase 90", "M 234 Analog Chorus"],
     "Fulltone": ["OCD"],
     "TC Electronic": ["Flashback"],
-    "Dunlop": ["Cry Baby GCB95"]
+    "Dunlop": ["Cry Baby GCB95"],
+    "Behringer": ["Spring Reverberation 646", "BM-13 Phaser", "EQ700"],
+    "Strymon": ["Cloudburst Reverb"],
+    "Harley Benton": ["Digital Delay"]
   },
   "Bass Amplifiers": {
     "Ampeg": ["V-4B"]

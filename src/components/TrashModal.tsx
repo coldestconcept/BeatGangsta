@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { VSTPlugin, AppTheme } from '../types';
 import { X, Music, Speaker, Box } from 'lucide-react';
 
@@ -29,8 +30,6 @@ export const TrashModal: React.FC<TrashModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'plugins' | 'instruments' | 'hardware'>('plugins');
 
-  if (!isOpen) return null;
-
   const getCount = (type: 'plugins' | 'instruments' | 'hardware') => {
     switch (type) {
       case 'plugins': return deletedPlugins.length;
@@ -42,9 +41,27 @@ export const TrashModal: React.FC<TrashModalProps> = ({
   const isEmpty = deletedPlugins.length === 0 && deletedInstruments.length === 0 && deletedHardware.length === 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative w-full max-w-4xl max-h-[80vh] flex flex-col rounded-[2rem] sm:rounded-[3rem] border shadow-2xl overflow-hidden ${theme === 'coldest' ? 'bg-white/90 border-white/60 text-slate-800' : theme === 'chef-mode' ? 'bg-white/90 border-orange-100 text-orange-950' : 'bg-[#111]/90 border-white/10 text-white'}`}>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+        >
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
+            onClick={onClose} 
+          />
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className={`relative w-full max-w-4xl max-h-[80vh] flex flex-col rounded-[2rem] sm:rounded-[3rem] border shadow-2xl overflow-hidden ${theme === 'coldest' ? 'bg-white/90 border-white/60 text-slate-800' : theme === 'chef-mode' ? 'bg-white/90 border-orange-100 text-orange-950' : 'bg-[#111]/90 border-white/10 text-white'}`}
+          >
         <div className="p-6 sm:p-8 border-b border-black/10 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-black">Trash</h2>
@@ -136,7 +153,9 @@ export const TrashModal: React.FC<TrashModalProps> = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
   );
 };

@@ -1,32 +1,9 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const RavenIcon = ({ className, flapDuration = "0.8s" }: { className?: string, flapDuration?: string }) => (
   <svg viewBox="-15 -10 140 120" className={className}>
-    <defs>
-      {/* Dark maroon to black gradient for the body */}
-      <linearGradient id="ravenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#2a0810" />
-        <stop offset="50%" stopColor="#0a0a0a" />
-        <stop offset="100%" stopColor="#1a0508" />
-      </linearGradient>
-      {/* Gradient for the beak */}
-      <linearGradient id="beakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#8c4a5b" />
-        <stop offset="100%" stopColor="#2a0810" />
-      </linearGradient>
-      {/* Emboss filter */}
-      <filter id="emboss" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur" />
-        <feSpecularLighting in="blur" surfaceScale="2" specularConstant="0.8" specularExponent="15" lightingColor="#9e2a46" result="specOut">
-          <fePointLight x="-10" y="-10" z="30" />
-        </feSpecularLighting>
-        <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
-        <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
-      </filter>
-    </defs>
-
-    <g filter="url(#emboss)">
+    <g filter="url(#ravenEmboss)">
       {/* Back Wing (Right Wing) */}
       <path fill="url(#ravenGrad)" opacity="0.85">
         <animate 
@@ -102,7 +79,7 @@ const RavenIcon = ({ className, flapDuration = "0.8s" }: { className?: string, f
       <circle cx="16" cy="41" r="1.2" fill="#ff1e56" filter="drop-shadow(0px 0px 2px #ff1e56)" />
     </g>
 
-    <g filter="url(#emboss)">
+    <g filter="url(#ravenEmboss)">
       {/* Front Wing (Left Wing) */}
       <path fill="url(#ravenGrad)">
         <animate 
@@ -125,30 +102,6 @@ const RavenIcon = ({ className, flapDuration = "0.8s" }: { className?: string, f
 
 const FeatherIcon = ({ className, bend = 'straight' }: { className?: string, bend?: 'straight' | 'left' | 'right' }) => (
   <svg viewBox="0 0 60 180" className={className}>
-    <defs>
-      <linearGradient id="featherGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#b53353" />
-        <stop offset="40%" stopColor="#9e2a46" /> {/* Burgundy matching raven emboss */}
-        <stop offset="100%" stopColor="#5a1224" />
-      </linearGradient>
-      <linearGradient id="quillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="#ffc2d1" stopOpacity="0.5" />
-        <stop offset="80%" stopColor="#ffc2d1" stopOpacity="0.9" />
-        <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
-      </linearGradient>
-      <filter id="featherEmboss" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur" />
-        <feSpecularLighting in="blur" surfaceScale="2.5" specularConstant="0.9" specularExponent="18" lightingColor="#ffb3c6" result="specOut">
-          <fePointLight x="-10" y="-10" z="30" />
-        </feSpecularLighting>
-        <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
-        <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
-      </filter>
-      <filter id="softBlur">
-        <feGaussianBlur stdDeviation="0.8" />
-      </filter>
-    </defs>
-
     <g filter="url(#featherEmboss)">
       {bend === 'straight' && (
         <g>
@@ -338,6 +291,48 @@ export const AvianField: React.FC = () => {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]">
+      <svg className="absolute w-0 h-0">
+        <defs>
+          <linearGradient id="ravenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#2a0810" />
+            <stop offset="50%" stopColor="#0a0a0a" />
+            <stop offset="100%" stopColor="#1a0508" />
+          </linearGradient>
+          <linearGradient id="beakGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#8c4a5b" />
+            <stop offset="100%" stopColor="#2a0810" />
+          </linearGradient>
+          <filter id="ravenEmboss" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur" />
+            <feSpecularLighting in="blur" surfaceScale="2" specularConstant="0.8" specularExponent="15" lightingColor="#9e2a46" result="specOut">
+              <fePointLight x="-10" y="-10" z="30" />
+            </feSpecularLighting>
+            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
+            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
+          </filter>
+          <linearGradient id="featherGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#b53353" />
+            <stop offset="40%" stopColor="#9e2a46" />
+            <stop offset="100%" stopColor="#5a1224" />
+          </linearGradient>
+          <linearGradient id="quillGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#ffc2d1" stopOpacity="0.5" />
+            <stop offset="80%" stopColor="#ffc2d1" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
+          </linearGradient>
+          <filter id="featherEmboss" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="1.5" result="blur" />
+            <feSpecularLighting in="blur" surfaceScale="2.5" specularConstant="0.9" specularExponent="18" lightingColor="#ffb3c6" result="specOut">
+              <fePointLight x="-10" y="-10" z="30" />
+            </feSpecularLighting>
+            <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
+            <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
+          </filter>
+          <filter id="softBlur">
+            <feGaussianBlur stdDeviation="0.8" />
+          </filter>
+        </defs>
+      </svg>
       <style>
         {`
           @keyframes flockFly {
@@ -350,35 +345,35 @@ export const AvianField: React.FC = () => {
             100% { transform: translateY(-30px); }
           }
           @keyframes featherSway1 {
-            0% { transform: translateY(-10vh) translateX(0) rotate(10deg); opacity: 0; }
+            0% { transform: translateY(-30vh) translateX(0) rotate(10deg); opacity: 0; }
             10% { opacity: 0.8; }
             25% { transform: translateY(20vh) translateX(40px) rotate(-15deg); }
             50% { transform: translateY(50vh) translateX(-20px) rotate(20deg); }
             75% { transform: translateY(80vh) translateX(30px) rotate(-10deg); }
             90% { opacity: 0.8; }
-            100% { transform: translateY(110vh) translateX(-10px) rotate(15deg); opacity: 0; }
+            100% { transform: translateY(130vh) translateX(-10px) rotate(15deg); opacity: 0; }
           }
           @keyframes featherSway2 {
-            0% { transform: translateY(-10vh) translateX(0) rotate(-20deg); opacity: 0; }
+            0% { transform: translateY(-30vh) translateX(0) rotate(-20deg); opacity: 0; }
             10% { opacity: 0.8; }
             33% { transform: translateY(30vh) translateX(-50px) rotate(10deg); }
             66% { transform: translateY(70vh) translateX(40px) rotate(-25deg); }
             90% { opacity: 0.8; }
-            100% { transform: translateY(110vh) translateX(-20px) rotate(5deg); opacity: 0; }
+            100% { transform: translateY(130vh) translateX(-20px) rotate(5deg); opacity: 0; }
           }
           @keyframes featherSway3 {
-            0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+            0% { transform: translateY(-30vh) translateX(0) rotate(0deg); opacity: 0; }
             10% { opacity: 0.8; }
             50% { transform: translateY(50vh) translateX(60px) rotate(45deg); }
             90% { opacity: 0.8; }
-            100% { transform: translateY(110vh) translateX(-40px) rotate(-30deg); opacity: 0; }
+            100% { transform: translateY(130vh) translateX(-40px) rotate(-30deg); opacity: 0; }
           }
           @keyframes featherSway4 {
-            0% { transform: translateY(-10vh) translateX(0) rotate(15deg); opacity: 0; }
+            0% { transform: translateY(-30vh) translateX(0) rotate(15deg); opacity: 0; }
             10% { opacity: 0.8; }
             50% { transform: translateY(50vh) translateX(-30px) rotate(180deg); }
             90% { opacity: 0.8; }
-            100% { transform: translateY(110vh) translateX(20px) rotate(345deg); opacity: 0; }
+            100% { transform: translateY(130vh) translateX(20px) rotate(345deg); opacity: 0; }
           }
           @keyframes windSwoop {
             0%, 55% { transform: translateX(100vw); opacity: 0; }
@@ -411,6 +406,8 @@ export const AvianField: React.FC = () => {
             animation: windSwoop 18s cubic-bezier(0.4, 0, 0.2, 1) infinite;
             z-index: 5;
           }
+          .feather-wrapper {
+          }
         `}
       </style>
 
@@ -418,14 +415,14 @@ export const AvianField: React.FC = () => {
       {feathers.map((f, i) => (
         <div
           key={`feather-${i}`}
-          className="absolute z-0"
+          className="absolute z-0 feather-wrapper"
           style={{
             left: f.left,
             width: `${f.size}px`,
           }}
         >
           <div style={{ animation: `featherWindBlow 18s cubic-bezier(0.4, 0, 0.2, 1) infinite` }}>
-            <div style={{ animation: `${f.anim} ${f.duration} linear ${f.delay} infinite` }}>
+            <div style={{ animation: `${f.anim} ${f.duration} linear ${f.delay} infinite both` }}>
               <FeatherIcon bend={f.bend} />
             </div>
           </div>
@@ -434,20 +431,20 @@ export const AvianField: React.FC = () => {
 
       {/* Wind Gust */}
       <div className="wind-container">
-        {Array.from({ length: 50 }).map((_, i) => (
+        {useMemo(() => Array.from({ length: 50 }).map((_, i) => (
           <div
             key={`wind-${i}`}
-            className="absolute bg-gradient-to-l from-transparent via-white/30 to-transparent rounded-full"
+            className="absolute bg-gradient-to-l from-transparent via-white/20 to-transparent rounded-full"
             style={{
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
-              width: `${Math.random() * 120 + 60}vw`,
-              height: `${Math.random() * 6 + 2}px`,
-              opacity: Math.random() * 0.5 + 0.3,
-              filter: 'blur(2px)',
+              width: `${Math.random() * 100 + 50}vw`,
+              height: `${Math.random() * 4 + 1}px`,
+              opacity: Math.random() * 0.3 + 0.1,
+              filter: 'blur(1px)',
             }}
           />
-        ))}
+        )), [])}
       </div>
 
       {/* Flock of Ravens */}

@@ -12,6 +12,49 @@
     0% { transform: translateY(-10vh) translateX(0); }
     100% { transform: translateY(110vh) translateX(20px); }
   }
+
+  --animate-flash: flash 0.05s infinite alternate;
+  @keyframes flash {
+    0% { opacity: 0.5; transform: scale(0.8); }
+    100% { opacity: 1; transform: scale(1.2); }
+  }
+
+  --animate-bulletFlyLeft: bulletFlyLeft 0.1s infinite;
+  @keyframes bulletFlyLeft {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-100px); opacity: 0; }
+  }
+
+  --animate-bulletFlyRight: bulletFlyRight 0.1s infinite;
+  @keyframes bulletFlyRight {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(100px); opacity: 0; }
+  }
+
+  --animate-recoilLeft: recoilLeft 0.1s infinite alternate;
+  @keyframes recoilLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(5px) rotate(2deg); }
+  }
+
+  --animate-recoilRight: recoilRight 0.1s infinite alternate;
+  @keyframes recoilRight {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-5px) rotate(-2deg); }
+  }
+
+  --animate-magDrop: magDrop 3s forwards ease-in;
+  @keyframes magDrop {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateY(1500px) rotate(720deg); opacity: 0; }
+  }
+
+  --animate-hatFloat: hatFloat 3s ease-in-out infinite;
+  @keyframes hatFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.02); }
+  }
 }
 
 @layer base {
@@ -27,5 +70,30 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  .animate-coldest-cycle {
+    position: relative;
+    display: inline-block;
+    color: #38bdf8;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 0.6);
+  }
+
+  .custom-color-picker {
+    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.5));
+    position: relative;
+    padding: 10px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  
+  .custom-color-picker canvas {
+    border: 8px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+    transition: transform 0.2s ease;
+  }
+
+  .custom-color-picker canvas:active {
+    transform: scale(0.98);
   }
 }

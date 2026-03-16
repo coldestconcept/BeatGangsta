@@ -7,7 +7,7 @@ interface AnalogEquipmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   theme: string;
-  onSave: (instruments: string[], hardware: string[]) => void;
+  onSave: (instruments: string[], hardware: string[]) => Promise<boolean>;
 }
 
 type MenuLevel = 'type' | 'category' | 'brand' | 'model';
@@ -18,6 +18,7 @@ export const AnalogEquipmentModal: React.FC<AnalogEquipmentModalProps> = ({ isOp
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
   const [selectedHardware, setSelectedHardware] = useState<string[]>([]);
@@ -27,9 +28,18 @@ export const AnalogEquipmentModal: React.FC<AnalogEquipmentModalProps> = ({ isOp
 
   if (!isOpen) return null;
 
-  const handleSave = () => {
-    onSave(selectedInstruments, selectedHardware);
-    onClose();
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      const success = await onSave(selectedInstruments, selectedHardware);
+      if (success) {
+        onClose();
+      }
+    } catch (error) {
+      console.error("Save failed", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleItem = (item: string, type: 'instruments' | 'hardware') => {
@@ -97,9 +107,11 @@ export const AnalogEquipmentModal: React.FC<AnalogEquipmentModalProps> = ({ isOp
     ? "bg-red-950/95 border-red-500/30 text-red-50"
     : theme === 'chef-mode'
     ? "bg-orange-950/95 border-orange-400/30 text-orange-50"
+    : theme === 'hustle-time'
+    ? "bg-[#001a14]/95 border-yellow-500/30 text-yellow-50"
     : "bg-emerald-950/95 border-emerald-500/30 text-emerald-50";
 
-  const highlightClass = theme === 'coldest' ? 'bg-sky-500 text-white' : theme === 'crazy-bird' ? 'bg-red-500 text-white' : theme === 'chef-mode' ? 'bg-orange-500 text-white' : 'bg-emerald-500 text-white';
+  const highlightClass = theme === 'coldest' ? 'bg-sky-500 text-white' : theme === 'crazy-bird' ? 'bg-red-500 text-white' : theme === 'chef-mode' ? 'bg-orange-500 text-white' : theme === 'hustle-time' ? 'bg-yellow-500 text-emerald-950' : 'bg-emerald-500 text-white';
 
   return (
     <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-3xl animate-in fade-in zoom-in duration-500">
@@ -126,8 +138,12 @@ export const AnalogEquipmentModal: React.FC<AnalogEquipmentModalProps> = ({ isOp
                 Cancel
               </button>
             )}
-            <button onClick={handleSave} className={`px-6 py-2 rounded-full font-black text-sm transition-all hover:scale-105 active:scale-95 ${theme === 'coldest' || theme === 'chef-mode' ? 'bg-white text-black' : 'bg-white text-black'}`}>
-              Save & Continue
+            <button 
+              onClick={handleSave} 
+              disabled={isLoading}
+              className={`px-6 py-2 rounded-full font-black text-sm transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 ${theme === 'coldest' || theme === 'chef-mode' ? 'bg-white text-black' : 'bg-white text-black'}`}
+            >
+              {isLoading ? 'Saving...' : 'Save & Continue'}
             </button>
           </div>
         </div>

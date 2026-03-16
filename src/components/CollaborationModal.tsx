@@ -1,18 +1,16 @@
 
 import React, { useState } from 'react';
 import { SharedSession, VSTPlugin, AppTheme } from '../types';
-import { Logo } from '../App';
 import { categorizeAndCompareLibraries } from '../services/geminiService';
 
 interface CollaborationModalProps {
   session: SharedSession;
   myPlugins: VSTPlugin[];
   onClose: () => void;
-  onAdoptUI: () => void;
 }
 
-export const CollaborationModal: React.FC<CollaborationModalProps> = ({ session, myPlugins, onClose, onAdoptUI }) => {
-  const { recipe, senderPlugins, preset, senderName } = session;
+export const CollaborationModal: React.FC<CollaborationModalProps> = ({ session, myPlugins, onClose }) => {
+  const { recipe, senderPlugins, senderName } = session;
   const [categorizedData, setCategorizedData] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -25,8 +23,13 @@ export const CollaborationModal: React.FC<CollaborationModalProps> = ({ session,
     try {
       const data = await categorizeAndCompareLibraries(senderPlugins, myPlugins);
       setCategorizedData(data);
-    } catch (err) {
-      alert("Failed to analyze racks. Gemini might be busy.");
+    } catch (err: any) {
+      console.error("Neural sort failed:", err);
+      if (err?.message?.includes("API_KEY_MISSING") || err?.message?.includes("401") || err?.message?.includes("403")) {
+        alert("Your API key is missing or invalid. Please update it in the main menu.");
+      } else {
+        alert("Failed to analyze racks. Gemini might be busy.");
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -70,36 +73,6 @@ export const CollaborationModal: React.FC<CollaborationModalProps> = ({ session,
             </button>
           </div>
         </header>
-
-        {/* The UI Bridge / Adoption Panel */}
-        <div className="bg-gradient-to-r from-orange-600/20 to-sky-600/20 px-8 py-6 flex flex-col sm:flex-row items-center justify-between border-b border-white/5 gap-6">
-          <div className="flex items-center gap-6">
-            <Logo 
-              size={64} 
-              grillStyle={preset.grillStyle as any} 
-              knifeStyle={preset.knifeStyle as any} 
-              duragStyle={preset.duragStyle as any} 
-              pendantStyle={preset.pendantStyle as any} 
-              chainStyle={preset.chainStyle as any} 
-              theme={preset.theme} 
-              saberColor={preset.saberColor} 
-              showChain={preset.showChain} 
-              highEyes={preset.highEyes} 
-              isCigarEquipped={preset.isCigarEquipped} 
-              showChefHat={preset.showChefHat} 
-            />
-            <div>
-              <p className="text-xs font-black text-white uppercase tracking-widest">Shared Studio Persona</p>
-              <p className="text-[10px] text-white/60 font-medium uppercase tracking-widest">{preset.theme} • {preset.knifeStyle}</p>
-            </div>
-          </div>
-          <button 
-            onClick={onAdoptUI}
-            className="px-8 py-3 bg-white text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-full shadow-xl hover:scale-105 active:scale-95 transition-all"
-          >
-            Adopt This Look
-          </button>
-        </div>
 
         {/* Side-by-Side Deck */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">

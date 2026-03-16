@@ -9,11 +9,71 @@ export interface VSTPlugin {
   features?: string[];
 }
 
+export interface FullSaveFile {
+  version: string;
+  timestamp: number;
+  userProfile: {
+    name: string;
+    photo: string;
+  };
+  gear: {
+    plugins: VSTPlugin[];
+    analogInstruments: Hardware[];
+    analogHardware: Hardware[];
+    drumKits?: Hardware[];
+    starredPlugins: string[];
+    starredHardware: string[];
+    deletedPlugins: VSTPlugin[];
+    deletedInstruments: Hardware[];
+    deletedHardware: Hardware[];
+  };
+  vault: {
+    recipes: SavedRecipe[];
+    critiques?: SavedCritique[];
+    folders: Folder[];
+  };
+  ui: {
+    theme: AppTheme;
+    grillStyle: GrillStyle;
+    knifeStyle: KnifeStyle;
+    duragStyle: DuragStyle;
+    pendantStyle: PendantStyle;
+    chainStyle: ChainStyle;
+    saberColor: string;
+    mascotColor: string;
+    showChain: boolean;
+    highEyes: boolean;
+    isCigarEquipped: boolean;
+    isTossingCigar: boolean;
+    showSparkles: boolean;
+  };
+}
+
 export interface Hardware {
   vendor: string;
   name: string;
-  type: 'instrument' | 'hardware';
+  type: 'instrument' | 'hardware' | 'drumkit';
   description?: string;
+  drumKitData?: DrumKit;
+}
+
+export interface DrumPart {
+  brand: string;
+  model: string;
+  size?: string;
+  tuning?: string;
+  muffling?: string;
+  notes?: string;
+  label?: string;
+}
+
+export interface DrumKit {
+  kick: DrumPart;
+  snare: DrumPart;
+  toms: DrumPart;
+  hiHats: DrumPart;
+  cymbals: DrumPart;
+  additionalParts?: DrumPart[];
 }
 
 export interface SignalChainStep {
@@ -27,27 +87,54 @@ export interface ParameterSetting {
   explanation: string;
 }
 
-export interface PluginDeepDive {
-  pluginName: string;
-  settings: ParameterSetting[];
-  proTip: string;
+export interface DeepDivePlugin {
+  name: string;
+  purpose: string;
+  deepDive: ParameterSetting[];
 }
 
-export interface RecipeParameters {
-  recipeTitle: string;
-  instrumentDives: {
-    instrumentName: string;
-    sourceSettings: ParameterSetting[];
-    preFxAdvice: string;
+export interface InstrumentTrack {
+  name: string;
+  plugin?: string;
+  type: 'vst' | 'analog' | 'other';
+  sourceSoundGoal: string;
+  deepDive: ParameterSetting[];
+  fxPlugins: DeepDivePlugin[];
+  busSend?: string;
+  loopGuide?: string;
+  midiNotes?: string;
+}
+
+export interface BusTrack {
+  name: string;
+  tracksUsingBus: string[];
+  fxPlugins: DeepDivePlugin[];
+}
+
+export interface GangstaVoxRecipe {
+  trackingChain?: {
+    unisonPlugin?: DeepDivePlugin;
+    inserts: DeepDivePlugin[];
+    dspUsageNote?: string;
+  };
+  vocalTracks: {
+    name: string;
+    sourceSoundGoal: string;
+    fxPlugins: DeepDivePlugin[];
+    busSend?: string;
+    loopGuide?: string;
   }[];
-  dives: PluginDeepDive[];
-  mixingAdvice: string;
+  layeringStrategy: string;
 }
 
 export interface DrumPattern {
-  kick: number[];
+  kick: {
+    isDoubleTime?: boolean;
+    steps: number[];
+  };
   snare: {
     isClap: boolean;
+    isDoubleTime?: boolean;
     steps: number[];
   };
   hiHat: {
@@ -67,15 +154,11 @@ export interface BeatRecipe {
   style: string;
   bpm: number;
   description: string;
-  ingredients: {
-    instrument: string;
-    sourceSoundGoal: string;
-    processing: SignalChainStep[];
-    loopGuide: string;
-  }[];
-  mastering: string[];
   artistTypes: string[];
-  layeringStrategy: string;
+  
+  instruments: InstrumentTrack[];
+  busses: BusTrack[];
+  
   drumPatterns: {
     intro: DrumPattern;
     verse: DrumPattern;
@@ -83,22 +166,32 @@ export interface BeatRecipe {
     bridge: DrumPattern;
     outro: DrumPattern;
   };
-  arrangement?: Record<string, string>;
+  
+  arrangement: Record<string, string>;
+  
+  masterPlugins: DeepDivePlugin[];
+  
+  isGangstaVox?: boolean;
+  gangstaVox?: GangstaVoxRecipe;
+  
+  recommendedScale?: string;
+  chordProgression?: string;
   mixingAdvice?: string;
-  deepDives?: {
-    pluginName: string;
-    whyItWorks: string;
-    keySettings: {
-      parameter: string;
-      value: string;
-    }[];
-  }[];
-  analogDives?: {
-    instrumentName: string;
-    technique: string;
-    settings: {
-      parameter: string;
-      value: string;
+  vocalElements?: GangstaVoxRecipe;
+  drumKitAdvice?: {
+    kick: string;
+    snare: string;
+    toms: string;
+  };
+  audioBase64?: string;
+  mimeType?: string;
+  specificHelp?: {
+    query: string;
+    advice: string;
+    recommendedChain: {
+      pluginName: string;
+      purpose: string;
+      settings: string;
     }[];
   }[];
 }
@@ -109,28 +202,14 @@ export interface Folder {
   color?: string;
 }
 
-export interface UIPreset {
-  id: string;
-  name: string;
-  theme: AppTheme;
-  grillStyle: string;
-  knifeStyle: string;
-  duragStyle: string;
-  pendantStyle: string;
-  chainStyle: string;
-  saberColor: string;
-  showChain: boolean;
-  highEyes: boolean;
-  isCigarEquipped: boolean;
-  showChefHat: boolean;
-  bubbleColor: string;
-  createdAt: string;
-}
-
 export interface SharedSession {
-  recipe: SavedRecipe;
+  recipe: SavedRecipe; // Primary recipe
+  recipes?: SavedRecipe[]; // All recipes in vault
+  critiques?: SavedCritique[]; // All critiques in vault
   senderPlugins: VSTPlugin[];
-  preset: UIPreset;
+  senderAnalogInstruments?: Hardware[];
+  senderAnalogHardware?: Hardware[];
+  senderDrumKits?: Hardware[];
   senderName: string;
 }
 
@@ -139,7 +218,6 @@ export interface SavedRecipe extends BeatRecipe {
   savedAt: string;
   bubbleColor: string;
   folderId?: string;
-  parameters?: RecipeParameters;
   linkedPresetId?: string;
 }
 
@@ -148,21 +226,61 @@ export interface HistoryItem extends BeatRecipe {
 }
 
 export interface User {
+  uid: string;
   name: string;
   email: string;
   photo: string;
+  termsAccepted?: boolean;
+  termsAcceptedAt?: string;
+  firebaseToken?: string;
+}
+
+export interface MixCritique {
+  id: string;
+  title: string;
+  overallFeedback: string;
+  strengths: string[];
+  weaknesses: string[];
+  actionPlan: {
+    issue: string;
+    solution: string;
+    recommendedChain: {
+      pluginName: string;
+      purpose: string;
+      settings: string;
+    }[];
+  }[];
+  specificHelp?: {
+    query: string;
+    advice: string;
+    recommendedChain: {
+      pluginName: string;
+      purpose: string;
+      settings: string;
+    }[];
+  }[];
+  isGangstaVox?: boolean;
+  audioBase64?: string;
+  mimeType?: string;
 }
 
 export interface RecommendationResponse {
   recipes: BeatRecipe[];
 }
 
-export type AppTheme = 'coldest' | 'crazy-bird' | 'hustle-time' | 'chef-mode';
+export type AppTheme = 'coldest' | 'crazy-bird' | 'hustle-time' | 'chef-mode' | 'ethereal-forest';
 
-export type KnifeStyle = 'standard' | 'gold' | 'bloody' | 'adamant' | 'mythril' | 'samuels-saber' | 'steak-knife';
+export type GrillStyle = 'diamond' | 'aquabberry-diamond' | 'gold' | 'opal' | 'rose-gold' | 'blue-diamond';
 
-export type PendantStyle = 'silver' | 'gold' | 'rose-gold';
+export type KnifeStyle = 'standard' | 'gold' | 'bloody' | 'adamant' | 'mythril' | 'samuels-saber' | 'dark-saber' | 'steak-knife';
 
-export type ChainStyle = 'silver' | 'gold' | 'rose-gold';
+export type PendantStyle = 'silver' | 'gold' | 'rose-gold' | 'diamond' | 'blue-diamond';
 
-export type DuragStyle = 'standard' | 'royal-green' | 'dragonball-purple';
+export type ChainStyle = 'silver' | 'gold' | 'rose-gold' | 'diamond' | 'blue-diamond';
+
+export type DuragStyle = 'standard' | 'royal-green' | 'dragonball-purple' | 'chef-hat' | 'sound-ninja' | 'rasta';
+
+export interface SavedCritique extends MixCritique {
+  savedAt: string;
+  folderId?: string;
+}

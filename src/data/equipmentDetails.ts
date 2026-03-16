@@ -439,5 +439,17 @@ export const equipmentDetails: Record<string, string> = {
   "Apollo x6": "A rackmount Thunderbolt 3 audio interface with two Unison mic preamps and HEXA Core processing.",
   "Apollo x8": "A rackmount Thunderbolt 3 audio interface with four Unison mic preamps and HEXA Core processing.",
   "Apollo x8p": "A rackmount Thunderbolt 3 audio interface with eight Unison mic preamps and HEXA Core processing.",
-  "Apollo x16": "A rackmount Thunderbolt 3 audio interface with 16 channels of line-level I/O and HEXA Core processing."
+  "Apollo x16": "A rackmount Thunderbolt 3 audio interface with 16 channels of line-level I/O and HEXA Core processing.",
+  "KA-15S (Soprano)": "The industry standard for entry-level ukuleles, offering a classic mahogany sound and reliable build.",
+  "KA-C (Concert)": "A larger-bodied ukulele with a fuller sound and more frets than a soprano, ideal for versatile playing.",
+  "15CM (Concert)": "A handmade concert ukulele with a mahogany top, back, and sides, known for its warm, resonant tone.",
+  "YAS-280 (Alto Sax)": "The gold standard for student alto saxophones, known for its excellent intonation and ease of play.",
+  "YTR-2330 (Trumpet)": "A highly reliable student trumpet with a balanced weight and easy response for beginners.",
+  "YFL-222 (Flute)": "A popular student flute featuring a nickel silver body and power-forged keys for durability.",
+  "S6 Original": "An award-winning acoustic guitar with a solid cedar top and wild cherry back and sides, offering a unique, warm tone.",
+  "GS Mini": "A compact, scaled-down acoustic guitar with a surprisingly big sound, perfect for travel or smaller players.",
+  "Ray4": "An affordable version of the classic StingRay bass, featuring a powerful humbucker and active electronics.",
+  "FG800": "The world's best-selling acoustic guitar, known for its solid spruce top and incredible value.",
+  "Pacifica 112V": "A versatile electric guitar with a solid alder body and Alnico V pickups, offering professional features at an entry-level price.",
+  "Stradivarius 180S37": "A professional-grade trumpet used by top orchestral and jazz players worldwide, known for its rich, brilliant sound."
 };
