@@ -1,5 +1,4 @@
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import axios from "axios";
@@ -86,7 +85,7 @@ const getRedirectUri = (req: express.Request) => {
   return `https://beatgangsta.com/api/auth/google/callback`;
 };
 
-async function startServer() {
+export async function createServer() {
   const app = express();
   const PORT = 3000;
 
@@ -1367,11 +1366,10 @@ async function startServer() {
 
   app.post("/api/gemini", async (req, res) => {
     const { model, contents, config, userApiKey } = req.body;
-    const apiKey = userApiKey;
+    const apiKey = userApiKey || process.env.GEMINI_API_KEY;
 
     console.log("Received request for model:", model);
-    console.log("userApiKey provided?", !!apiKey);
-    console.log("Using apiKey starting with:", apiKey ? apiKey.substring(0, 4) + "..." : "none");
+    console.log("apiKey source:", userApiKey ? "User provided" : (process.env.GEMINI_API_KEY ? "Server fallback" : "None"));
 
     if (!apiKey) {
       return res.status(500).json({ error: "API_KEY_MISSING: API key is missing. Please provide your own Gemini API key in the settings to use this feature." });
@@ -1495,6 +1493,7 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -1518,9 +1517,20 @@ async function startServer() {
     res.status(500).json({ error: "Internal server error" });
   });
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  return app;
+}
+
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  createServer().then(app => {
+    app.listen(3000, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:3000`);
+    });
   });
 }
 
-startServer();
+// For Vercel
+export default async (req: any, res: any) => {
+  const app = await createServer();
+  return app(req, res);
+};
